@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+
+  <url>
+    <loc>https://luvo.app/</loc>
+    <lastmod>2024-11-10</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="ko" href="https://luvo.app/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://luvo.app/en" />
+  </url>
+
+  <url>
+    <loc>https://luvo.app/onboarding</loc>
+    <lastmod>2024-11-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://luvo.app/analyze</loc>
+    <lastmod>2024-11-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+</urlset>

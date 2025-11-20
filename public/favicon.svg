@@ -1,0 +1,43 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="luxuryGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#d4af37;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#f4e4a1;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#b8860b;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="innerGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#faf9f7;stop-opacity:0.9" />
+      <stop offset="100%" style="stop-color:#f5f1eb;stop-opacity:0.7" />
+    </linearGradient>
+    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#b8860b" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+
+  <!-- Background with luxury gradient -->
+  <rect width="32" height="32" rx="8" fill="url(#luxuryGradient)" filter="url(#shadow)"/>
+
+  <!-- Inner glow overlay -->
+  <rect x="1" y="1" width="30" height="30" rx="7" fill="url(#innerGlow)" opacity="0.3"/>
+
+  <!-- Cherry blossom icon -->
+  <g transform="translate(16, 16)">
+    <!-- Main flower with 5 petals -->
+    <g transform="scale(0.8)">
+      <!-- Petal 1 - top -->
+      <ellipse cx="0" cy="-6" rx="2.5" ry="4" fill="#faf9f7" opacity="0.95" transform="rotate(0)"/>
+      <!-- Petal 2 - top right -->
+      <ellipse cx="4.2" cy="-3.7" rx="2.5" ry="4" fill="#faf9f7" opacity="0.95" transform="rotate(72)"/>
+      <!-- Petal 3 - bottom right -->
+      <ellipse cx="2.6" cy="4.8" rx="2.5" ry="4" fill="#faf9f7" opacity="0.95" transform="rotate(144)"/>
+      <!-- Petal 4 - bottom left -->
+      <ellipse cx="-2.6" cy="4.8" rx="2.5" ry="4" fill="#faf9f7" opacity="0.95" transform="rotate(216)"/>
+      <!-- Petal 5 - top left -->
+      <ellipse cx="-4.2" cy="-3.7" rx="2.5" ry="4" fill="#faf9f7" opacity="0.95" transform="rotate(288)"/>
+
+      <!-- Center -->
+      <circle cx="0" cy="0" r="1.5" fill="#d4af37"/>
+      <circle cx="0" cy="0" r="0.8" fill="#f4e4a1"/>
+    </g>
+  </g>
+</svg>

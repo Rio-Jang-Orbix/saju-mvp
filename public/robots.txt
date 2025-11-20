@@ -1,0 +1,19 @@
+User-agent: *
+Allow: /
+
+# Disallow admin and API routes
+Disallow: /api/
+Disallow: /admin/
+Disallow: /_next/
+Disallow: /*.json$
+
+# Allow important pages
+Allow: /
+Allow: /onboarding
+Allow: /analyze
+
+# Sitemap
+Sitemap: https://luvo-mvp.vercel.app/sitemap.xml
+
+# Crawl delay
+Crawl-delay: 1
