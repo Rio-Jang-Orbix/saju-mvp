@@ -3,6 +3,8 @@
 > **현재 상태**: ✅ 기본 기능 구현 완료 - 바로 사용 가능!
 >
 > **🌐 라이브 데모**: https://saju-bjv4gvv95-orbix-service-teams-projects.vercel.app
+>
+> **📦 GitHub**: https://github.com/Rio-Jang-Orbix/saju-mvp
 
 AI 기반 사주팔자 분석으로 운명을 알아보는 웹 애플리케이션입니다.
 
