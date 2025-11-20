@@ -1,13 +1,13 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { calculateSaju, getElementName, getElementColor, type SajuResult, type Element } from '@/lib/saju/calculator'
 import { sajuToText, copyToClipboard, shareViaNative } from '@/lib/saju/share'
 import { Sparkles, ArrowLeft, Loader2, Star, Share2, Copy } from 'lucide-react'
 
-export default function AnalyzePage() {
+function AnalyzePageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [sajuResult, setSajuResult] = useState<SajuResult | null>(null)
@@ -296,5 +296,20 @@ export default function AnalyzePage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function AnalyzePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-indigo-950 via-purple-900 to-pink-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-8xl mb-8 animate-bounce">🔮</div>
+          <h2 className="text-3xl font-bold text-white mb-4">로딩 중...</h2>
+        </div>
+      </div>
+    }>
+      <AnalyzePageContent />
+    </Suspense>
   )
 }
