@@ -1,4 +1,4 @@
-import { getSolarDate, getLunarDate } from 'korean-lunar-calendar'
+import KoreanLunarCalendar from 'korean-lunar-calendar'
 
 // 천간 (10개)
 const HEAVENLY_STEMS = ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸']
@@ -163,7 +163,9 @@ function calculateElements(year: SajuPillar, month: SajuPillar, day: SajuPillar,
  */
 function lunarToSolar(year: number, month: number, day: number, isLeapMonth: boolean = false) {
   try {
-    const result = getSolarDate(year, month, day, isLeapMonth)
+    const calendar = new KoreanLunarCalendar()
+    calendar.setLunarDate(year, month, day, isLeapMonth)
+    const result = calendar.getSolarCalendar()
     return {
       year: result.year,
       month: result.month,
