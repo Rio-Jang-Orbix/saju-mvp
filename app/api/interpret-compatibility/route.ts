@@ -38,17 +38,17 @@ export async function POST(request: NextRequest) {
 - 오행 조화도: ${compatibilityResult.harmony.elements}점
 
 [${person1Name}님의 사주]
-- 년주: ${compatibilityResult.person1.year.heavenlyStem}${compatibilityResult.person1.year.earthlyBranch}
-- 월주: ${compatibilityResult.person1.month.heavenlyStem}${compatibilityResult.person1.month.earthlyBranch}
-- 일주: ${compatibilityResult.person1.day.heavenlyStem}${compatibilityResult.person1.day.earthlyBranch}
-- 시주: ${compatibilityResult.person1.hour.heavenlyStem}${compatibilityResult.person1.hour.earthlyBranch}
+- 년주: ${compatibilityResult.person1.year.stem}${compatibilityResult.person1.year.branch}
+- 월주: ${compatibilityResult.person1.month.stem}${compatibilityResult.person1.month.branch}
+- 일주: ${compatibilityResult.person1.day.stem}${compatibilityResult.person1.day.branch}
+- 시주: ${compatibilityResult.person1.hour.stem}${compatibilityResult.person1.hour.branch}
 - 오행: 木${compatibilityResult.person1.elements.wood} 火${compatibilityResult.person1.elements.fire} 土${compatibilityResult.person1.elements.earth} 金${compatibilityResult.person1.elements.metal} 水${compatibilityResult.person1.elements.water}
 
 [${person2Name}님의 사주]
-- 년주: ${compatibilityResult.person2.year.heavenlyStem}${compatibilityResult.person2.year.earthlyBranch}
-- 월주: ${compatibilityResult.person2.month.heavenlyStem}${compatibilityResult.person2.month.earthlyBranch}
-- 일주: ${compatibilityResult.person2.day.heavenlyStem}${compatibilityResult.person2.day.earthlyBranch}
-- 시주: ${compatibilityResult.person2.hour.heavenlyStem}${compatibilityResult.person2.hour.earthlyBranch}
+- 년주: ${compatibilityResult.person2.year.stem}${compatibilityResult.person2.year.branch}
+- 월주: ${compatibilityResult.person2.month.stem}${compatibilityResult.person2.month.branch}
+- 일주: ${compatibilityResult.person2.day.stem}${compatibilityResult.person2.day.branch}
+- 시주: ${compatibilityResult.person2.hour.stem}${compatibilityResult.person2.hour.branch}
 - 오행: 木${compatibilityResult.person2.elements.wood} 火${compatibilityResult.person2.elements.fire} 土${compatibilityResult.person2.elements.earth} 金${compatibilityResult.person2.elements.metal} 水${compatibilityResult.person2.elements.water}
 
 [자동 분석된 관계]

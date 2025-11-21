@@ -29,10 +29,10 @@ export async function POST(request: NextRequest) {
     const prompt = `당신은 전문 명리학자이자 사주 상담가입니다. 사용자의 사주를 바탕으로 이번 달과 오늘의 운세를 상세히 해석해주세요.
 
 [사용자의 사주]
-- 년주: ${sajuResult.year.heavenlyStem}${sajuResult.year.earthlyBranch}
-- 월주: ${sajuResult.month.heavenlyStem}${sajuResult.month.earthlyBranch}
-- 일주: ${sajuResult.day.heavenlyStem}${sajuResult.day.earthlyBranch}
-- 시주: ${sajuResult.hour.heavenlyStem}${sajuResult.hour.earthlyBranch}
+- 년주: ${sajuResult.year.stem}${sajuResult.year.branch}
+- 월주: ${sajuResult.month.stem}${sajuResult.month.branch}
+- 일주: ${sajuResult.day.stem}${sajuResult.day.branch}
+- 시주: ${sajuResult.hour.stem}${sajuResult.hour.branch}
 - 오행: 木${sajuResult.elements.wood} 火${sajuResult.elements.fire} 土${sajuResult.elements.earth} 金${sajuResult.elements.metal} 水${sajuResult.elements.water}
 - 성별: ${sajuResult.birthInfo.gender === 'male' ? '남성' : '여성'}
 
