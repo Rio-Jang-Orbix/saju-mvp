@@ -111,17 +111,17 @@ export function calculateDaeun(saju: SajuResult, currentAge: number): DaeunResul
   const periods: DaeunPeriod[] = []
 
   // 년간이 양간인지 음간인지 판단
-  const yearStem = saju.year.heavenlyStem
+  const yearStem = saju.year.stem
   const isYangStem = YANG_STEMS.includes(yearStem)
 
   // 양남음녀는 순행, 음남양녀는 역행
-  const gender = saju.gender
+  const gender = saju.birthInfo.gender
   const isForward =
     (isYangStem && gender === 'male') || (!isYangStem && gender === 'female')
 
   // 월주의 천간지지 인덱스 찾기
-  const monthStem = saju.month.heavenlyStem
-  const monthBranch = saju.month.earthlyBranch
+  const monthStem = saju.month.stem
+  const monthBranch = saju.month.branch
   let stemIndex = HEAVENLY_STEMS.indexOf(monthStem)
   let branchIndex = EARTHLY_BRANCHES.indexOf(monthBranch)
 
@@ -129,7 +129,7 @@ export function calculateDaeun(saju: SajuResult, currentAge: number): DaeunResul
   let startAge = 1
 
   // 일간 추출 (고급 이론용)
-  const dayStem = saju.day.heavenlyStem
+  const dayStem = saju.day.stem
 
   // 10개의 대운 계산 (100세까지)
   for (let i = 0; i < 10; i++) {

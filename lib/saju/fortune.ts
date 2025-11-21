@@ -180,12 +180,12 @@ function calculateDayCompatibility(
   let score = 50
 
   // 일주와의 비교
-  if (dayStem === saju.day.heavenlyStem) score += 20
-  if (dayBranch === saju.day.earthlyBranch) score += 20
+  if (dayStem === saju.day.stem) score += 20
+  if (dayBranch === saju.day.branch) score += 20
 
   // 년주와의 비교
-  if (dayStem === saju.year.heavenlyStem) score += 10
-  if (dayBranch === saju.year.earthlyBranch) score += 10
+  if (dayStem === saju.year.stem) score += 10
+  if (dayBranch === saju.year.branch) score += 10
 
   if (score >= 80) return 'excellent'
   if (score >= 65) return 'good'

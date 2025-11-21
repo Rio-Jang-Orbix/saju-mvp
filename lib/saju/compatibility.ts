@@ -248,8 +248,8 @@ function calculateHeavenlyStemHarmony(p1: SajuResult, p2: SajuResult): number {
   const pillars = ['year', 'month', 'day', 'hour'] as const
 
   pillars.forEach((pillar) => {
-    const stem1 = p1[pillar].heavenlyStem
-    const stem2 = p2[pillar].heavenlyStem
+    const stem1 = p1[pillar].stem
+    const stem2 = p2[pillar].stem
     const pair = stem1 + stem2
     const reversePair = stem2 + stem1
 
@@ -271,8 +271,8 @@ function calculateEarthlyBranchHarmony(p1: SajuResult, p2: SajuResult): number {
   const pillars = ['year', 'month', 'day', 'hour'] as const
 
   pillars.forEach((pillar) => {
-    const branch1 = p1[pillar].earthlyBranch
-    const branch2 = p2[pillar].earthlyBranch
+    const branch1 = p1[pillar].branch
+    const branch2 = p2[pillar].branch
     const pair = branch1 + branch2
     const reversePair = branch2 + branch1
 
@@ -320,8 +320,8 @@ function analyzeRelationships(
 
   // 천간 관계 분석
   pillars.forEach((pillar, index) => {
-    const stem1 = p1[pillar].heavenlyStem
-    const stem2 = p2[pillar].heavenlyStem
+    const stem1 = p1[pillar].stem
+    const stem2 = p2[pillar].stem
     const pair = stem1 + stem2
     const reversePair = stem2 + stem1
 
@@ -344,8 +344,8 @@ function analyzeRelationships(
 
   // 지지 관계 분석
   pillars.forEach((pillar, index) => {
-    const branch1 = p1[pillar].earthlyBranch
-    const branch2 = p2[pillar].earthlyBranch
+    const branch1 = p1[pillar].branch
+    const branch2 = p2[pillar].branch
     const pair = branch1 + branch2
     const reversePair = branch2 + branch1
 
