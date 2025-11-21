@@ -2,15 +2,19 @@
 
 import { useState } from 'react'
 import { calculateSaju } from '@/lib/saju/calculator'
+import type { SajuResult } from '@/lib/saju/calculator'
 import { generateFortuneCalendar } from '@/lib/saju/fortune'
 import type { FortuneCalendar } from '@/lib/saju/fortune'
-import { Calendar, Moon, Sun, TrendingUp, ArrowLeft, Star, Sparkles } from 'lucide-react'
+import { Calendar, Moon, Sun, TrendingUp, ArrowLeft, Star, Sparkles, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 
 export default function FortunePage() {
   const [calendar, setCalendar] = useState<FortuneCalendar | null>(null)
+  const [sajuResult, setSajuResult] = useState<SajuResult | null>(null)
   const [calendarType, setCalendarType] = useState<'solar' | 'lunar'>('solar')
   const [showForm, setShowForm] = useState(true)
+  const [aiInterpretation, setAiInterpretation] = useState<string>('')
+  const [isLoadingAI, setIsLoadingAI] = useState(false)
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -25,8 +29,33 @@ export default function FortunePage() {
 
     const saju = calculateSaju(year, month, day, hour, minute, calendarType === 'lunar', gender)
     const fortuneCalendar = generateFortuneCalendar(saju)
+    setSajuResult(saju)
     setCalendar(fortuneCalendar)
     setShowForm(false)
+  }
+
+  const handleAIInterpretation = async () => {
+    if (!calendar || !sajuResult) return
+
+    setIsLoadingAI(true)
+    try {
+      const response = await fetch('/api/interpret-fortune', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fortuneCalendar: calendar,
+          sajuResult: sajuResult,
+        }),
+      })
+
+      const data = await response.json()
+      setAiInterpretation(data.interpretation)
+    } catch (error) {
+      console.error('AI 해석 요청 실패:', error)
+      setAiInterpretation('AI 해석을 불러오는데 실패했습니다. 나중에 다시 시도해주세요.')
+    } finally {
+      setIsLoadingAI(false)
+    }
   }
 
   const getCompatibilityColor = (compatibility: string) => {
@@ -384,6 +413,50 @@ export default function FortunePage() {
               ))}
             </div>
           </div>
+        </div>
+
+        {/* AI 해석 */}
+        <div className="max-w-6xl mx-auto mb-12">
+          <h2 className="text-3xl font-bold text-yellow-300 mb-6 flex items-center gap-3">
+            <Sparkles size={36} />
+            AI 운세 해석
+          </h2>
+
+          {!aiInterpretation && !isLoadingAI && (
+            <div className="backdrop-blur-xl bg-white/10 rounded-2xl p-8 border border-white/20 text-center">
+              <p className="text-purple-200 mb-6">
+                AI가 당신의 이번 달과 오늘의 운세를 더욱 상세하게 분석하여 실용적인 조언을 제공합니다.
+              </p>
+              <button
+                onClick={handleAIInterpretation}
+                className="bg-gradient-to-r from-yellow-400 via-pink-500 to-purple-600 hover:from-yellow-500 hover:via-pink-600 hover:to-purple-700 text-white py-4 px-8 rounded-xl text-lg font-semibold inline-flex items-center gap-2 transition-all hover:scale-105"
+              >
+                <Sparkles size={20} />
+                AI 운세 해석 받기
+              </button>
+              <p className="text-purple-300 text-sm mt-4">
+                * 프리미엄 기능 (무료 체험 가능)
+              </p>
+            </div>
+          )}
+
+          {isLoadingAI && (
+            <div className="backdrop-blur-xl bg-white/10 rounded-2xl p-8 border border-white/20 text-center">
+              <Loader2 className="animate-spin mx-auto mb-4 text-pink-300" size={48} />
+              <p className="text-white text-lg">AI가 운세를 분석하고 있습니다...</p>
+              <p className="text-purple-200 text-sm mt-2">잠시만 기다려주세요</p>
+            </div>
+          )}
+
+          {aiInterpretation && (
+            <div className="backdrop-blur-xl bg-white/10 rounded-2xl p-8 border border-white/20">
+              <div className="prose prose-invert max-w-none">
+                <div className="text-white whitespace-pre-wrap leading-relaxed">
+                  {aiInterpretation}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -1,13 +1,15 @@
 'use client'
 
-import { Suspense, useMemo } from 'react'
+import { Suspense, useMemo, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { calculateCompatibility } from '@/lib/saju/compatibility'
-import { Heart, Users, TrendingUp, TrendingDown, Lightbulb, ArrowLeft, Share2 } from 'lucide-react'
+import { Heart, Users, TrendingUp, TrendingDown, Lightbulb, ArrowLeft, Share2, Sparkles, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 
 function CompatibilityResultContent() {
   const searchParams = useSearchParams()
+  const [aiInterpretation, setAiInterpretation] = useState<string>('')
+  const [isLoadingAI, setIsLoadingAI] = useState(false)
 
   const compatibility = useMemo(() => {
     const person1 = {
@@ -49,6 +51,29 @@ function CompatibilityResultContent() {
     if (score >= 60) return '💕'
     if (score >= 40) return '💛'
     return '💙'
+  }
+
+  const handleAIInterpretation = async () => {
+    setIsLoadingAI(true)
+    try {
+      const response = await fetch('/api/interpret-compatibility', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          compatibilityResult: result,
+          person1Name: person1.name,
+          person2Name: person2.name,
+        }),
+      })
+
+      const data = await response.json()
+      setAiInterpretation(data.interpretation)
+    } catch (error) {
+      console.error('AI 해석 요청 실패:', error)
+      setAiInterpretation('AI 해석을 불러오는데 실패했습니다. 나중에 다시 시도해주세요.')
+    } finally {
+      setIsLoadingAI(false)
+    }
   }
 
   return (
@@ -273,6 +298,50 @@ function CompatibilityResultContent() {
             </div>
           </div>
         )}
+
+        {/* AI 해석 */}
+        <div className="max-w-4xl mx-auto mb-8">
+          <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
+            <Sparkles className="text-yellow-300" />
+            AI 궁합 해석
+          </h2>
+
+          {!aiInterpretation && !isLoadingAI && (
+            <div className="backdrop-blur-xl bg-white/10 rounded-2xl p-8 border border-white/20 text-center">
+              <p className="text-purple-200 mb-6">
+                AI가 두 분의 궁합을 더욱 상세하게 분석하여 조언해드립니다.
+              </p>
+              <button
+                onClick={handleAIInterpretation}
+                className="bg-gradient-to-r from-yellow-400 via-pink-500 to-purple-600 hover:from-yellow-500 hover:via-pink-600 hover:to-purple-700 text-white py-4 px-8 rounded-xl text-lg font-semibold inline-flex items-center gap-2 transition-all hover:scale-105"
+              >
+                <Sparkles size={20} />
+                AI 궁합 해석 받기
+              </button>
+              <p className="text-purple-300 text-sm mt-4">
+                * 프리미엄 기능 (무료 체험 가능)
+              </p>
+            </div>
+          )}
+
+          {isLoadingAI && (
+            <div className="backdrop-blur-xl bg-white/10 rounded-2xl p-8 border border-white/20 text-center">
+              <Loader2 className="animate-spin mx-auto mb-4 text-pink-300" size={48} />
+              <p className="text-white text-lg">AI가 궁합을 분석하고 있습니다...</p>
+              <p className="text-purple-200 text-sm mt-2">잠시만 기다려주세요</p>
+            </div>
+          )}
+
+          {aiInterpretation && (
+            <div className="backdrop-blur-xl bg-white/10 rounded-2xl p-8 border border-white/20">
+              <div className="prose prose-invert max-w-none">
+                <div className="text-white whitespace-pre-wrap leading-relaxed">
+                  {aiInterpretation}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* 공유 버튼 */}
         <div className="max-w-4xl mx-auto text-center">
