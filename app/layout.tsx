@@ -1,22 +1,6 @@
 import type { Metadata } from "next";
-import { Noto_Serif_KR, Inter } from "next/font/google";
 import "./globals.css";
-
-const notoSerifKR = Noto_Serif_KR({
-  variable: "--font-noto-serif-kr",
-  subsets: ["latin"],
-  weight: ["200", "300", "400", "500", "600", "700", "900"],
-  display: 'swap',
-  preload: true,
-});
-
-const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
-  weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
-  display: 'swap',
-  preload: true,
-});
+import { Footer } from "@/components/ui/Footer";
 
 export const metadata: Metadata = {
   title: {
@@ -115,12 +99,16 @@ export default function RootLayout({
   return (
     <html lang="ko" className="light" style={{ colorScheme: 'light' }}>
       <head>
-        {/* Preconnect to external domains */}
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+        {/* Pretendard Font - MZ Generation Style */}
+        <link
+          rel="stylesheet"
+          as="style"
+          crossOrigin="anonymous"
+          href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.min.css"
+        />
 
         {/* Performance hints */}
-        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5" />
         <meta httpEquiv="x-ua-compatible" content="ie=edge" />
 
         <script
@@ -269,10 +257,11 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body
-        className={`${notoSerifKR.variable} ${inter.variable} antialiased`}
-      >
-        {children}
+      <body className="antialiased">
+        <div className="flex flex-col min-h-screen">
+          <main className="flex-grow">{children}</main>
+          <Footer />
+        </div>
       </body>
     </html>
   );
