@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { Metadata } from 'next'
 import { FileText, CheckCircle, AlertCircle, Scale, Shield } from 'lucide-react'
+import { Breadcrumb, breadcrumbConfigs } from '@/components/ui/Breadcrumb'
 
 export const metadata: Metadata = {
   title: '이용약관',
@@ -20,6 +21,7 @@ export default function TermsPage() {
   return (
     <div className="min-h-screen mz-bg py-12">
       <div className="mz-container max-w-4xl">
+        <Breadcrumb items={breadcrumbConfigs['/terms']} />
         {/* Header */}
         <div className="text-center mb-12 animate-fade-in">
           <div className="inline-flex items-center gap-3 mb-4">

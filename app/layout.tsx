@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Footer } from "@/components/ui/Footer";
+import { GoogleAnalytics } from "@/components/analytics/GoogleAnalytics";
+import { WebVitals } from "@/components/analytics/WebVitals";
 
 export const metadata: Metadata = {
   title: {
@@ -323,6 +325,12 @@ export default function RootLayout({
         />
       </head>
       <body className="antialiased">
+        {/* Google Analytics */}
+        <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID || ''} />
+
+        {/* Web Vitals Performance Monitoring */}
+        <WebVitals />
+
         <div className="flex flex-col min-h-screen">
           <main className="flex-grow">{children}</main>
           <Footer />

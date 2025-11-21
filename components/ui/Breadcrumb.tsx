@@ -113,4 +113,5 @@ export const breadcrumbConfigs = {
   '/terms': [{ name: '이용약관', url: '/terms' }],
   '/cookies': [{ name: '쿠키 정책', url: '/cookies' }],
   '/company': [{ name: '회사 소개', url: '/company' }],
+  '/faq': [{ name: '자주 묻는 질문', url: '/faq' }],
 }

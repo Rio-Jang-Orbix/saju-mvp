@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { Metadata } from 'next'
 import { Building2, Mail, Github, Code, Sparkles, Target } from 'lucide-react'
+import { Breadcrumb, breadcrumbConfigs } from '@/components/ui/Breadcrumb'
 
 export const metadata: Metadata = {
   title: '회사 소개',
@@ -20,6 +21,7 @@ export default function CompanyPage() {
   return (
     <div className="min-h-screen mz-bg py-12">
       <div className="mz-container max-w-4xl">
+        <Breadcrumb items={breadcrumbConfigs['/company']} />
         {/* Header */}
         <div className="text-center mb-12 animate-fade-in">
           <div className="inline-flex items-center gap-3 mb-4">

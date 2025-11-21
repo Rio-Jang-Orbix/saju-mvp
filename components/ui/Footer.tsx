@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Github, Heart, Sparkles, Shield, FileText, Cookie, Building2 } from 'lucide-react'
+import { Github, Heart, Sparkles, Shield, FileText, Cookie, Building2, HelpCircle } from 'lucide-react'
 
 export function Footer() {
   const currentYear = new Date().getFullYear()
@@ -77,6 +77,15 @@ export function Footer() {
               법적 고지
             </h4>
             <ul className="space-y-3 text-sm">
+              <li>
+                <Link
+                  href="/faq"
+                  className="text-gray-600 hover:text-purple-600 transition-colors flex items-center gap-2"
+                >
+                  <HelpCircle size={14} />
+                  자주 묻는 질문
+                </Link>
+              </li>
               <li>
                 <Link
                   href="/privacy"
