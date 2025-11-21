@@ -4,7 +4,16 @@ import { Shield, Lock, Eye, Database, UserCheck, Mail } from 'lucide-react'
 
 export const metadata: Metadata = {
   title: '개인정보처리방침',
-  description: '사주팔자 분석 서비스의 개인정보 처리방침입니다.',
+  description: '사주팔자 분석 서비스의 개인정보 처리방침입니다. 개인정보 수집 및 이용, 보유 기간, 제3자 제공, 파기 절차 등을 안내합니다.',
+  keywords: ['개인정보처리방침', '개인정보보호', '정보보호정책', '개인정보 수집', '개인정보 이용'],
+  openGraph: {
+    title: '개인정보처리방침 | 사주팔자 분석',
+    description: '사주팔자 분석 서비스의 개인정보 처리방침과 보호 정책을 안내합니다.',
+    url: '/privacy',
+  },
+  alternates: {
+    canonical: '/privacy',
+  },
 }
 
 export default function PrivacyPage() {

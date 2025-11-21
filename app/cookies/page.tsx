@@ -4,7 +4,16 @@ import { Cookie, Settings, Info, CheckCircle2 } from 'lucide-react'
 
 export const metadata: Metadata = {
   title: '쿠키 정책',
-  description: '사주팔자 분석 서비스의 쿠키 사용 정책입니다.',
+  description: '사주팔자 분석 서비스의 쿠키 사용 정책입니다. 필수 쿠키, 기능 쿠키, 분석 쿠키의 사용 목적과 관리 방법을 안내합니다.',
+  keywords: ['쿠키 정책', '개인정보', '쿠키 관리', '쿠키 설정', '웹사이트 쿠키'],
+  openGraph: {
+    title: '쿠키 정책 | 사주팔자 분석',
+    description: '사주팔자 분석 서비스의 쿠키 사용 정책과 관리 방법을 안내합니다.',
+    url: '/cookies',
+  },
+  alternates: {
+    canonical: '/cookies',
+  },
 }
 
 export default function CookiesPage() {

@@ -4,7 +4,16 @@ import { Building2, Mail, Github, Code, Sparkles, Target } from 'lucide-react'
 
 export const metadata: Metadata = {
   title: '회사 소개',
-  description: '사주팔자 분석 서비스를 제공하는 팀을 소개합니다.',
+  description: '사주팔자 분석 서비스를 제공하는 Orbix를 소개합니다. AI 기술과 전통 명리학을 결합한 혁신적인 운세 분석 플랫폼입니다.',
+  keywords: ['회사 소개', 'Orbix', '사주팔자 서비스', 'AI 사주', '팀 소개', '명리학 서비스', '오픈소스'],
+  openGraph: {
+    title: '회사 소개 | 사주팔자 분석',
+    description: 'AI 기술과 전통 명리학을 결합한 사주팔자 분석 서비스를 제공하는 Orbix를 소개합니다.',
+    url: '/company',
+  },
+  alternates: {
+    canonical: '/company',
+  },
 }
 
 export default function CompanyPage() {

@@ -4,7 +4,16 @@ import { FileText, CheckCircle, AlertCircle, Scale, Shield } from 'lucide-react'
 
 export const metadata: Metadata = {
   title: '이용약관',
-  description: '사주팔자 분석 서비스 이용약관입니다.',
+  description: '사주팔자 분석 서비스 이용약관입니다. 서비스 제공, 이용자 의무, 책임, 면책조항 등 서비스 이용에 관한 모든 약관을 안내합니다.',
+  keywords: ['이용약관', '서비스 약관', '이용 조건', '서비스 정책', '약관'],
+  openGraph: {
+    title: '이용약관 | 사주팔자 분석',
+    description: '사주팔자 분석 서비스 이용약관과 정책을 안내합니다.',
+    url: '/terms',
+  },
+  alternates: {
+    canonical: '/terms',
+  },
 }
 
 export default function TermsPage() {
