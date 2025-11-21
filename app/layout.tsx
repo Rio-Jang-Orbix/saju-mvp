@@ -88,6 +88,21 @@ export const metadata: Metadata = {
     //   'naver-site-verification': 'your-naver-verification-code',
     // },
   },
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+    ],
+    apple: [
+      { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+    ],
+    other: [
+      { url: '/android-chrome-192x192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/android-chrome-512x512.png', sizes: '512x512', type: 'image/png' },
+    ],
+  },
   category: '운세, 사주, 역학',
 };
 
@@ -110,6 +125,19 @@ export default function RootLayout({
         {/* Performance hints */}
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5" />
         <meta httpEquiv="x-ua-compatible" content="ie=edge" />
+
+        {/* DNS Prefetch & Preconnect for performance */}
+        <link rel="dns-prefetch" href="https://api.openai.com" />
+        <link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
+        <link rel="preconnect" href="https://api.openai.com" />
+        <link rel="preconnect" href="https://cdn.jsdelivr.net" crossOrigin="anonymous" />
+
+        {/* Naver Search Optimization */}
+        <meta property="og:article:author" content="Orbix" />
+        <meta name="theme-color" content="#7c3aed" />
+
+        {/* PWA Manifest */}
+        <link rel="manifest" href="/manifest.json" />
 
         <script
           type="application/ld+json"
@@ -251,6 +279,43 @@ export default function RootLayout({
                     }
                   ],
                   "totalTime": "PT2M"
+                },
+                {
+                  "@type": "LocalBusiness",
+                  "@id": `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/#localbusiness`,
+                  "name": "사주팔자 분석 by Orbix",
+                  "image": `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/og-image.png`,
+                  "url": process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
+                  "telephone": "",
+                  "email": "orbix.partners@gmail.com",
+                  "address": {
+                    "@type": "PostalAddress",
+                    "addressCountry": "KR",
+                    "addressLocality": "서울"
+                  },
+                  "geo": {
+                    "@type": "GeoCoordinates",
+                    "latitude": 37.5665,
+                    "longitude": 126.9780
+                  },
+                  "openingHoursSpecification": {
+                    "@type": "OpeningHoursSpecification",
+                    "dayOfWeek": [
+                      "Monday",
+                      "Tuesday",
+                      "Wednesday",
+                      "Thursday",
+                      "Friday",
+                      "Saturday",
+                      "Sunday"
+                    ],
+                    "opens": "00:00",
+                    "closes": "23:59"
+                  },
+                  "priceRange": "무료",
+                  "sameAs": [
+                    "https://github.com/Rio-Jang-Orbix/saju-mvp"
+                  ]
                 }
               ]
             })
