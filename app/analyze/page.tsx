@@ -7,13 +7,15 @@ import { calculateSaju, getElementName, getElementColor, type SajuResult, type E
 import { sajuToText, copyToClipboard, shareViaNative } from '@/lib/saju/share'
 import { calculateDaeun, calculateKoreanAge } from '@/lib/saju/daeun'
 import type { DaeunResult } from '@/lib/saju/daeun'
-import { Sparkles, ArrowLeft, Loader2, Star, Share2, Copy, TrendingUp } from 'lucide-react'
+import { analyzeAdvancedSaju, type AdvancedSajuAnalysis, getSibiUnseongStrength, getTongByeonDescription, getTongByeonFortune } from '@/lib/saju/advanced'
+import { Sparkles, ArrowLeft, Loader2, Star, Share2, Copy, TrendingUp, BookOpen, Zap, Users } from 'lucide-react'
 
 function AnalyzePageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [sajuResult, setSajuResult] = useState<SajuResult | null>(null)
   const [daeunResult, setDaeunResult] = useState<DaeunResult | null>(null)
+  const [advancedAnalysis, setAdvancedAnalysis] = useState<AdvancedSajuAnalysis | null>(null)
   const [isCalculating, setIsCalculating] = useState(true)
   const [aiInterpretation, setAiInterpretation] = useState<string>('')
   const [isLoadingAI, setIsLoadingAI] = useState(false)
@@ -47,6 +49,10 @@ function AnalyzePageContent() {
         const currentAge = calculateKoreanAge(year)
         const daeun = calculateDaeun(result, currentAge)
         setDaeunResult(daeun)
+
+        // 고급 이론 분석
+        const advanced = analyzeAdvancedSaju(result)
+        setAdvancedAnalysis(advanced)
 
         setIsCalculating(false)
       }, 1500)
@@ -249,6 +255,164 @@ function AnalyzePageContent() {
             </div>
           </div>
         </div>
+
+        {/* 십이운성 분석 */}
+        {advancedAnalysis && (
+          <div className="mb-12">
+            <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
+              <Zap className="text-blue-300" />
+              십이운성 분석 (十二運星)
+            </h2>
+            <div className="backdrop-blur-xl bg-white/10 rounded-2xl p-8 border border-white/20">
+              <p className="text-purple-200 mb-6">생명의 12가지 주기로 각 기둥의 에너지를 분석합니다.</p>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {[
+                  { title: '년주', unseong: advancedAnalysis.sibiunseong.year, desc: advancedAnalysis.sibiunseong.descriptions.year, emoji: '📅' },
+                  { title: '월주', unseong: advancedAnalysis.sibiunseong.month, desc: advancedAnalysis.sibiunseong.descriptions.month, emoji: '🌙' },
+                  { title: '일주', unseong: advancedAnalysis.sibiunseong.day, desc: advancedAnalysis.sibiunseong.descriptions.day, emoji: '☀️' },
+                  { title: '시주', unseong: advancedAnalysis.sibiunseong.hour, desc: advancedAnalysis.sibiunseong.descriptions.hour, emoji: '🕐' },
+                ].map((item, idx) => (
+                  <div key={idx} className="bg-white/5 rounded-xl p-4 border border-white/20">
+                    <div className="text-2xl text-center mb-2">{item.emoji}</div>
+                    <div className="text-purple-200 text-sm text-center mb-2">{item.title}</div>
+                    <div className="text-2xl font-bold text-white text-center mb-2">{item.unseong}</div>
+                    <div className="flex items-center justify-center gap-1 mb-3">
+                      {Array.from({ length: 10 }).map((_, i) => (
+                        <div
+                          key={i}
+                          className={`w-2 h-2 rounded-full ${
+                            i < getSibiUnseongStrength(item.unseong)
+                              ? 'bg-blue-400'
+                              : 'bg-white/20'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    <div className="text-xs text-purple-100 text-center">{item.desc}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 신살 분석 */}
+        {advancedAnalysis && advancedAnalysis.sinsal.sinsals.length > 0 && (
+          <div className="mb-12">
+            <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
+              <Star className="text-purple-300" />
+              신살 분석 (神殺)
+            </h2>
+            <div className="backdrop-blur-xl bg-white/10 rounded-2xl p-8 border border-white/20">
+              <div className="flex justify-between items-center mb-6">
+                <p className="text-purple-200">사주에 있는 길신과 흉살을 분석합니다.</p>
+                <div className="flex gap-4 text-sm">
+                  <span className="text-green-300">길신: {advancedAnalysis.sinsal.summary.goodCount}개</span>
+                  <span className="text-red-300">흉살: {advancedAnalysis.sinsal.summary.badCount}개</span>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {advancedAnalysis.sinsal.sinsals.map((sinsal, idx) => (
+                  <div
+                    key={idx}
+                    className={`p-4 rounded-xl border-2 ${
+                      sinsal.isGood
+                        ? 'bg-green-500/10 border-green-500/50'
+                        : 'bg-red-500/10 border-red-500/50'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className={`text-xl font-bold ${sinsal.isGood ? 'text-green-300' : 'text-red-300'}`}>
+                        {sinsal.name}
+                      </h3>
+                      <div className="text-sm text-purple-200">
+                        {sinsal.position.join(', ')}
+                      </div>
+                    </div>
+                    <p className="text-sm text-purple-100">{sinsal.description}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 통변성 분석 */}
+        {advancedAnalysis && (
+          <div className="mb-12">
+            <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
+              <Users className="text-pink-300" />
+              통변성 분석 (通變星 - 十神)
+            </h2>
+            <div className="backdrop-blur-xl bg-white/10 rounded-2xl p-8 border border-white/20">
+              <p className="text-purple-200 mb-6">일간과 다른 간지의 오행 관계로 성격과 재능을 분석합니다.</p>
+
+              {/* 통변성 분포 */}
+              <div className="mb-6">
+                <h3 className="text-lg font-bold text-white mb-4">통변성 분포</h3>
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                  {Object.entries(advancedAnalysis.tongbyeon.summary)
+                    .filter(([_, count]) => count > 0)
+                    .sort(([_, a], [__, b]) => b - a)
+                    .map(([tb, count]) => (
+                      <div
+                        key={tb}
+                        className={`p-4 rounded-xl text-center ${
+                          advancedAnalysis.tongbyeon.dominant.includes(tb as any)
+                            ? 'bg-gradient-to-br from-pink-500/30 to-purple-500/30 border-2 border-pink-500'
+                            : 'bg-white/5 border border-white/20'
+                        }`}
+                      >
+                        <div className="text-2xl font-bold text-white mb-1">{tb}</div>
+                        <div className="text-3xl font-bold text-pink-300 mb-1">{count}</div>
+                        <div className={`text-xs px-2 py-1 rounded-full inline-block ${
+                          getTongByeonFortune(tb as any) === '길'
+                            ? 'bg-green-500/30 text-green-300'
+                            : getTongByeonFortune(tb as any) === '흉'
+                            ? 'bg-red-500/30 text-red-300'
+                            : 'bg-gray-500/30 text-gray-300'
+                        }`}>
+                          {getTongByeonFortune(tb as any)}
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </div>
+
+              {/* 우세한 통변성 해석 */}
+              <div className="bg-gradient-to-r from-pink-500/20 to-purple-500/20 border-2 border-pink-500/50 rounded-xl p-6">
+                <h3 className="text-lg font-bold text-pink-300 mb-3">주요 성향</h3>
+                {advancedAnalysis.tongbyeon.dominant.map((tb, idx) => (
+                  <div key={idx} className="mb-2">
+                    <div className="text-xl font-bold text-white mb-1">{tb}</div>
+                    <div className="text-purple-100 text-sm">{getTongByeonDescription(tb)}</div>
+                  </div>
+                ))}
+              </div>
+
+              {/* 각 기둥별 통변성 */}
+              <div className="mt-6">
+                <h3 className="text-lg font-bold text-white mb-4">기둥별 통변성</h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {[
+                    { title: '년주', stem: advancedAnalysis.tongbyeon.year.stem, branch: advancedAnalysis.tongbyeon.year.branch },
+                    { title: '월주', stem: advancedAnalysis.tongbyeon.month.stem, branch: advancedAnalysis.tongbyeon.month.branch },
+                    { title: '일주', stem: advancedAnalysis.tongbyeon.day.stem, branch: advancedAnalysis.tongbyeon.day.branch },
+                    { title: '시주', stem: advancedAnalysis.tongbyeon.hour.stem, branch: advancedAnalysis.tongbyeon.hour.branch },
+                  ].map((item, idx) => (
+                    <div key={idx} className="bg-white/5 rounded-lg p-3 border border-white/20">
+                      <div className="text-purple-200 text-sm text-center mb-2">{item.title}</div>
+                      <div className="text-white text-center">
+                        <div className="text-sm">천간: {item.stem}</div>
+                        <div className="text-sm">지지: {item.branch}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* 대운 분석 */}
         {daeunResult && (

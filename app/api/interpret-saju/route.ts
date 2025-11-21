@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import OpenAI from 'openai'
 import { SajuResult } from '@/lib/saju/calculator'
+import { analyzeAdvancedSaju } from '@/lib/saju/advanced'
 
 // OpenAI 클라이언트 초기화
 const openai = new OpenAI({
@@ -18,15 +19,18 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // 고급 이론 분석
+    const advancedAnalysis = analyzeAdvancedSaju(sajuResult)
+
     // OpenAI API 키 확인
     if (!process.env.OPENAI_API_KEY) {
       // API 키가 없으면 Mock 응답 반환
-      const mockInterpretation = generateMockInterpretation(sajuResult)
+      const mockInterpretation = generateMockInterpretation(sajuResult, advancedAnalysis)
       return NextResponse.json({ interpretation: mockInterpretation })
     }
 
     // 사주 정보를 프롬프트로 변환
-    const prompt = buildPrompt(sajuResult)
+    const prompt = buildPrompt(sajuResult, advancedAnalysis)
 
     // OpenAI API 호출
     const completion = await openai.chat.completions.create({
@@ -37,13 +41,17 @@ export async function POST(request: NextRequest) {
           content: `당신은 전문적인 사주 명리학자입니다. 사주팔자를 분석하여 운세를 상세하게 해석해주세요.
           친근하고 긍정적인 톤으로 작성하되, 전문성을 유지하세요.
           다음 항목들을 포함하여 해석해주세요:
-          1. 전체적인 성격 및 기질
+          1. 전체적인 성격 및 기질 (통변성 분석 포함)
           2. 오행 균형 분석
-          3. 적성 및 진로
-          4. 대인관계 및 연애운
-          5. 재물운 및 건강운
-          6. 올해의 운세 (간단히)
-          7. 조언 및 당부사항`
+          3. 십이운성 분석 - 생애 주기별 에너지 상태
+          4. 신살 분석 - 길신과 흉살의 영향
+          5. 적성 및 진로 (통변성 기반 재능 분석)
+          6. 대인관계 및 연애운
+          7. 재물운 및 건강운
+          8. 올해의 운세 (간단히)
+          9. 조언 및 당부사항
+
+          특히 십이운성, 신살, 통변성(십신) 이론을 활용하여 깊이 있는 해석을 제공해주세요.`
         },
         {
           role: 'user',
@@ -61,17 +69,34 @@ export async function POST(request: NextRequest) {
     console.error('AI 해석 오류:', error)
 
     // 오류 발생 시 Mock 응답 반환
-    const sajuResult = await request.json().then(data => data.sajuResult)
-    const mockInterpretation = generateMockInterpretation(sajuResult)
-    return NextResponse.json({ interpretation: mockInterpretation })
+    try {
+      const sajuResult = await request.json().then(data => data.sajuResult)
+      const advancedAnalysis = analyzeAdvancedSaju(sajuResult)
+      const mockInterpretation = generateMockInterpretation(sajuResult, advancedAnalysis)
+      return NextResponse.json({ interpretation: mockInterpretation })
+    } catch {
+      return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    }
   }
 }
 
 /**
  * 사주 정보를 프롬프트로 변환
  */
-function buildPrompt(saju: SajuResult): string {
+function buildPrompt(saju: SajuResult, advanced: any): string {
   const { year, month, day, hour, elements, birthInfo } = saju
+  const { sibiunseong, sinsal, tongbyeon } = advanced
+
+  // 통변성 요약
+  const dominantTongbyeon = tongbyeon.dominant.join(', ')
+  const tongbyeonSummary = Object.entries(tongbyeon.summary)
+    .filter(([_, count]: [string, any]) => count > 0)
+    .map(([tb, count]) => `${tb}: ${count}개`)
+    .join(', ')
+
+  // 신살 요약
+  const goodSinsals = sinsal.sinsals.filter((s: any) => s.isGood).map((s: any) => s.name).join(', ')
+  const badSinsals = sinsal.sinsals.filter((s: any) => !s.isGood).map((s: any) => s.name).join(', ')
 
   return `
 다음 사주를 분석해주세요:
@@ -94,15 +119,31 @@ function buildPrompt(saju: SajuResult): string {
 - 金 (금): ${elements['金']}개
 - 水 (수): ${elements['水']}개
 
+【 십이운성 분석 】
+- 년주: ${sibiunseong.year}
+- 월주: ${sibiunseong.month}
+- 일주: ${sibiunseong.day}
+- 시주: ${sibiunseong.hour}
+
+【 신살 분석 】
+- 길신: ${goodSinsals || '없음'}
+- 흉살: ${badSinsals || '없음'}
+
+【 통변성 분석 (십신) 】
+- 분포: ${tongbyeonSummary}
+- 주요 성향: ${dominantTongbyeon}
+
 위 사주를 바탕으로 상세한 운세 해석을 부탁드립니다.
+십이운성, 신살, 통변성의 의미를 깊이 있게 반영하여 해석해주세요.
 `.trim()
 }
 
 /**
  * Mock 해석 생성 (API 키가 없거나 오류 발생 시)
  */
-function generateMockInterpretation(saju: SajuResult): string {
+function generateMockInterpretation(saju: SajuResult, advanced: any): string {
   const { year, month, day, hour, elements, birthInfo } = saju
+  const { sibiunseong, sinsal, tongbyeon } = advanced
 
   // 오행 중 가장 많은 것과 적은 것 찾기
   const elementEntries = Object.entries(elements) as [string, number][]
@@ -140,6 +181,53 @@ function generateMockInterpretation(saju: SajuResult): string {
 반면 ${elementNames[minElement]} 기운은 ${elements[minElement]}개로 상대적으로 약합니다.
 
 ${getElementBalance(maxElement, minElement)}
+
+━━━━━━━━━━━━━━━━━━━━
+
+⚡ 십이운성 분석 (生命의 主期)
+
+- 년주: ${sibiunseong.year} - ${sibiunseong.descriptions.year}
+- 월주: ${sibiunseong.month} - ${sibiunseong.descriptions.month}
+- 일주: ${sibiunseong.day} - ${sibiunseong.descriptions.day}
+- 시주: ${sibiunseong.hour} - ${sibiunseong.descriptions.hour}
+
+특히 일주의 ${sibiunseong.day}는 당신의 핵심 에너지를 나타내며,
+${sibiunseong.descriptions.day}
+
+━━━━━━━━━━━━━━━━━━━━
+
+⭐ 신살 분석
+
+${sinsal.sinsals.length > 0 ? sinsal.sinsals.map((s: any) =>
+  `• ${s.name} (${s.position.join(', ')}): ${s.description}`
+).join('\n') : '특별한 신살이 없습니다.'}
+
+길신 ${sinsal.summary.goodCount}개, 흉살 ${sinsal.summary.badCount}개로 ${
+  sinsal.summary.goodCount > sinsal.summary.badCount ? '긍정적인 기운이 우세합니다.' :
+  sinsal.summary.goodCount < sinsal.summary.badCount ? '조심스러운 행동이 필요합니다.' :
+  '균형잡힌 상태입니다.'
+}
+
+━━━━━━━━━━━━━━━━━━━━
+
+👥 통변성 분석 (十神)
+
+주요 성향: ${tongbyeon.dominant.join(', ')}
+${tongbyeon.dominant.map((tb: any) => {
+  const descriptions: any = {
+    '비견': '독립심과 자존심이 강하며 협력보다는 경쟁을 선호합니다.',
+    '겁재': '행동력과 추진력이 강하나 재물 관리에 주의가 필요합니다.',
+    '식신': '온화하고 낙천적이며 예술적 재능이 있습니다.',
+    '상관': '뛰어난 재능과 표현력이 있으나 기존 틀을 거부하는 성향이 있습니다.',
+    '편재': '사업과 투자에 능하며 활동적으로 재물을 얻습니다.',
+    '정재': '근면하고 성실하며 안정적으로 재물을 축적합니다.',
+    '편관': '강한 추진력과 승부욕이 있으나 스트레스도 많습니다.',
+    '정관': '정직하고 책임감이 강하며 사회적 지위를 중시합니다.',
+    '편인': '지적이고 창의적이나 외로움을 느끼기 쉽습니다.',
+    '정인': '학문을 좋아하고 어른의 도움을 받으며 덕망이 있습니다.'
+  }
+  return `• ${tb}: ${descriptions[tb] || ''}`
+}).join('\n')}
 
 ━━━━━━━━━━━━━━━━━━━━
 
