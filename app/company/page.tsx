@@ -180,31 +180,37 @@ export default function CompanyPage() {
               <h2 className="mz-heading-2 mb-4">연락처</h2>
               <div className="mz-body space-y-4">
                 <div className="flex items-center gap-3 p-3 bg-purple-50 rounded-lg">
-                  <Github className="text-purple-600" size={24} />
+                  <Building2 className="text-purple-600" size={24} />
+                  <div>
+                    <p className="font-semibold text-gray-900">회사명</p>
+                    <p className="text-sm text-gray-700">Orbix</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 p-3 bg-cyan-50 rounded-lg">
+                  <Mail className="text-cyan-600" size={24} />
+                  <div>
+                    <p className="font-semibold text-gray-900">이메일</p>
+                    <a
+                      href="mailto:orbix.partners@gmail.com"
+                      className="text-cyan-600 hover:underline text-sm"
+                    >
+                      orbix.partners@gmail.com
+                    </a>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 p-3 bg-pink-50 rounded-lg">
+                  <Github className="text-pink-600" size={24} />
                   <div>
                     <p className="font-semibold text-gray-900">GitHub Repository</p>
                     <a
                       href="https://github.com/Rio-Jang-Orbix/saju-mvp"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-purple-600 hover:underline text-sm"
-                    >
-                      https://github.com/Rio-Jang-Orbix/saju-mvp
-                    </a>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3 p-3 bg-pink-50 rounded-lg">
-                  <Mail className="text-pink-600" size={24} />
-                  <div>
-                    <p className="font-semibold text-gray-900">문의 및 피드백</p>
-                    <a
-                      href="https://github.com/Rio-Jang-Orbix/saju-mvp/issues"
-                      target="_blank"
-                      rel="noopener noreferrer"
                       className="text-pink-600 hover:underline text-sm"
                     >
-                      GitHub Issues로 문의하기
+                      https://github.com/Rio-Jang-Orbix/saju-mvp
                     </a>
                   </div>
                 </div>

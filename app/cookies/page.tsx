@@ -238,14 +238,31 @@ export default function CookiesPage() {
             <p className="mz-body mb-3">
               쿠키 정책에 대해 궁금한 사항이나 문의사항이 있으시면 언제든지 연락해주세요.
             </p>
-            <a
-              href="https://github.com/Rio-Jang-Orbix/saju-mvp/issues"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-purple-600 hover:underline font-medium"
-            >
-              GitHub Issues로 문의하기 →
-            </a>
+            <div className="space-y-2">
+              <p className="text-sm text-gray-700">
+                <strong className="text-gray-900">회사명:</strong> Orbix
+              </p>
+              <p className="text-sm text-gray-700">
+                <strong className="text-gray-900">이메일:</strong>{' '}
+                <a
+                  href="mailto:orbix.partners@gmail.com"
+                  className="text-purple-600 hover:underline"
+                >
+                  orbix.partners@gmail.com
+                </a>
+              </p>
+              <p className="text-sm text-gray-700">
+                <strong className="text-gray-900">GitHub:</strong>{' '}
+                <a
+                  href="https://github.com/Rio-Jang-Orbix/saju-mvp/issues"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-purple-600 hover:underline"
+                >
+                  Issues로 문의하기 →
+                </a>
+              </p>
+            </div>
           </section>
         </div>
 

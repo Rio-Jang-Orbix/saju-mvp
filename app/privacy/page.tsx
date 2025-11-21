@@ -218,8 +218,16 @@ export default function PrivacyPage() {
                   <div className="bg-purple-50 p-4 rounded-lg">
                     <p className="font-semibold text-gray-900 mb-2">개인정보 보호책임자</p>
                     <ul className="space-y-1 text-gray-700">
-                      <li>이름: 사주팔자 분석팀</li>
-                      <li>연락처: 문의는 GitHub Issues를 통해 접수해주세요</li>
+                      <li>회사명: Orbix</li>
+                      <li>
+                        이메일:{' '}
+                        <a
+                          href="mailto:orbix.partners@gmail.com"
+                          className="text-purple-600 hover:underline"
+                        >
+                          orbix.partners@gmail.com
+                        </a>
+                      </li>
                       <li>
                         GitHub:{' '}
                         <a

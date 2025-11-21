@@ -180,10 +180,16 @@ export function Footer() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs text-gray-600 mb-6">
             <div className="space-y-2">
               <p>
-                <strong className="text-gray-900">프로젝트:</strong> 사주팔자 분석 (Saju MVP)
+                <strong className="text-gray-900">회사명:</strong> Orbix
               </p>
               <p>
-                <strong className="text-gray-900">개발:</strong> Saju MVP Team
+                <strong className="text-gray-900">이메일:</strong>{' '}
+                <a
+                  href="mailto:orbix.partners@gmail.com"
+                  className="text-purple-600 hover:underline"
+                >
+                  orbix.partners@gmail.com
+                </a>
               </p>
               <p>
                 <strong className="text-gray-900">라이선스:</strong> MIT License (오픈소스)
@@ -214,7 +220,7 @@ export function Footer() {
         {/* Copyright */}
         <div className="border-t border-purple-200 pt-6 text-center">
           <p className="text-sm text-gray-600 mb-2">
-            © {currentYear} 사주팔자 분석 (Saju MVP). All rights reserved.
+            © {currentYear} Orbix. All rights reserved.
           </p>
           <p className="text-xs text-gray-500">
             본 서비스는 오픈소스 프로젝트로 MIT 라이선스 하에 배포됩니다.
@@ -222,7 +228,7 @@ export function Footer() {
           <div className="mt-4 flex items-center justify-center gap-2 text-xs text-gray-500">
             <span>Made with</span>
             <Heart size={14} className="text-pink-500 fill-pink-500 animate-pulse" />
-            <span>by developers who care</span>
+            <span>by Orbix</span>
           </div>
         </div>
       </div>
