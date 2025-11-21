@@ -1,4 +1,6 @@
 import { calculateSaju, type SajuResult } from './calculator'
+import { analyzeAdvancedSaju, type AdvancedSajuAnalysis } from './advanced'
+import type { TongByeonSeong } from './tongbyeon'
 
 export interface CompatibilityInput {
   person1: {
@@ -40,6 +42,25 @@ export interface CompatibilityResult {
   strengths: string[]
   weaknesses: string[]
   advice: string[]
+  // 고급 이론
+  advancedAnalysis?: {
+    person1: AdvancedSajuAnalysis
+    person2: AdvancedSajuAnalysis
+    tongbyeonCompatibility: {
+      complementary: TongByeonSeong[] // 보완적인 통변성
+      conflicting: TongByeonSeong[] // 충돌하는 통변성
+      score: number // 통변성 궁합 점수
+    }
+    sinsalCompatibility: {
+      sharedGoodSinsals: string[] // 공통 길신
+      sharedBadSinsals: string[] // 공통 흉살
+      balanceScore: number // 신살 균형 점수
+    }
+    sibiunseongCompatibility: {
+      energyBalance: number // 에너지 균형 점수
+      lifeStageMatch: string // 생애 주기 매칭
+    }
+  }
 }
 
 // 천간 관계
@@ -119,6 +140,10 @@ export function calculateCompatibility(input: CompatibilityInput): Compatibility
     input.person2.gender
   )
 
+  // 고급 이론 분석
+  const advanced1 = analyzeAdvancedSaju(person1)
+  const advanced2 = analyzeAdvancedSaju(person2)
+
   // 관계 분석
   const relationships = analyzeRelationships(person1, person2)
 
@@ -176,6 +201,26 @@ export function calculateCompatibility(input: CompatibilityInput): Compatibility
     weaknesses.push('생활 패턴의 차이로 불편함이 있을 수 있습니다')
   }
 
+  // 고급 이론 궁합 분석
+  const tongbyeonCompatibility = analyzeTongbyeonCompatibility(advanced1, advanced2)
+  const sinsalCompatibility = analyzeSinsalCompatibility(advanced1, advanced2)
+  const sibiunseongCompatibility = analyzeSibiunseongCompatibility(advanced1, advanced2)
+
+  // 고급 이론에 따른 추가 평가
+  if (tongbyeonCompatibility.score >= 70) {
+    strengths.push('성격과 재능이 서로를 보완합니다')
+  } else if (tongbyeonCompatibility.score < 40) {
+    weaknesses.push('성향 차이로 인한 갈등이 있을 수 있습니다')
+  }
+
+  if (sinsalCompatibility.balanceScore >= 70) {
+    strengths.push('운세적으로 서로에게 좋은 영향을 줍니다')
+  }
+
+  if (sibiunseongCompatibility.energyBalance >= 70) {
+    strengths.push('생애 에너지가 조화롭게 흐릅니다')
+  }
+
   return {
     person1,
     person2,
@@ -185,6 +230,13 @@ export function calculateCompatibility(input: CompatibilityInput): Compatibility
     strengths,
     weaknesses,
     advice,
+    advancedAnalysis: {
+      person1: advanced1,
+      person2: advanced2,
+      tongbyeonCompatibility,
+      sinsalCompatibility,
+      sibiunseongCompatibility,
+    },
   }
 }
 
@@ -397,4 +449,176 @@ function analyzeRelationships(
   })
 
   return relationships
+}
+
+/**
+ * 통변성 궁합 분석
+ */
+function analyzeTongbyeonCompatibility(
+  advanced1: AdvancedSajuAnalysis,
+  advanced2: AdvancedSajuAnalysis
+) {
+  const tb1 = advanced1.tongbyeon
+  const tb2 = advanced2.tongbyeon
+
+  // 보완적인 통변성 찾기
+  const complementary: TongByeonSeong[] = []
+  const conflicting: TongByeonSeong[] = []
+
+  // 재성(재물) - 식상(표현력) 조합은 좋음
+  if ((tb1.dominant.includes('편재') || tb1.dominant.includes('정재')) &&
+      (tb2.dominant.includes('식신') || tb2.dominant.includes('상관'))) {
+    complementary.push('편재', '식신')
+  }
+
+  // 관성(명예) - 인성(학문) 조합은 좋음
+  if ((tb1.dominant.includes('정관') || tb1.dominant.includes('편관')) &&
+      (tb2.dominant.includes('정인') || tb2.dominant.includes('편인'))) {
+    complementary.push('정관', '정인')
+  }
+
+  // 식상 - 인성은 충돌
+  if ((tb1.dominant.includes('식신') || tb1.dominant.includes('상관')) &&
+      (tb2.dominant.includes('정인') || tb2.dominant.includes('편인'))) {
+    conflicting.push('식신', '정인')
+  }
+
+  // 비겁이 둘 다 강하면 충돌
+  if ((tb1.summary['비견'] + tb1.summary['겁재'] > 3) &&
+      (tb2.summary['비견'] + tb2.summary['겁재'] > 3)) {
+    conflicting.push('비견')
+  }
+
+  // 점수 계산
+  let score = 50
+  score += complementary.length * 15
+  score -= conflicting.length * 10
+
+  // 주요 통변성이 다양하면 가점
+  if (tb1.dominant.length + tb2.dominant.length >= 4) {
+    score += 10
+  }
+
+  return {
+    complementary,
+    conflicting,
+    score: Math.max(0, Math.min(100, score))
+  }
+}
+
+/**
+ * 신살 궁합 분석
+ */
+function analyzeSinsalCompatibility(
+  advanced1: AdvancedSajuAnalysis,
+  advanced2: AdvancedSajuAnalysis
+) {
+  const s1 = advanced1.sinsal
+  const s2 = advanced2.sinsal
+
+  // 공통 신살 찾기
+  const names1 = s1.sinsals.map(s => s.name)
+  const names2 = s2.sinsals.map(s => s.name)
+
+  const sharedGoodSinsals = names1.filter(n =>
+    names2.includes(n) &&
+    s1.sinsals.find(s => s.name === n)?.isGood
+  )
+
+  const sharedBadSinsals = names1.filter(n =>
+    names2.includes(n) &&
+    !s1.sinsals.find(s => s.name === n)?.isGood
+  )
+
+  // 균형 점수 계산
+  let balanceScore = 50
+
+  // 둘 다 천을귀인이 있으면 매우 좋음
+  if (s1.summary.hasCheonEulGuiIn && s2.summary.hasCheonEulGuiIn) {
+    balanceScore += 20
+  }
+
+  // 둘 다 문창귀인이 있으면 좋음
+  if (s1.summary.hasMunChangGuiIn && s2.summary.hasMunChangGuiIn) {
+    balanceScore += 15
+  }
+
+  // 한 쪽이 길신이 많고 한 쪽이 흉살이 많으면 보완 관계
+  if ((s1.summary.goodCount > s1.summary.badCount && s2.summary.badCount > s2.summary.goodCount) ||
+      (s1.summary.badCount > s1.summary.goodCount && s2.summary.goodCount > s2.summary.badCount)) {
+    balanceScore += 10
+  }
+
+  // 공통 길신이 많으면 가점
+  balanceScore += sharedGoodSinsals.length * 5
+
+  // 공통 흉살이 많으면 감점
+  balanceScore -= sharedBadSinsals.length * 5
+
+  return {
+    sharedGoodSinsals,
+    sharedBadSinsals,
+    balanceScore: Math.max(0, Math.min(100, balanceScore))
+  }
+}
+
+/**
+ * 십이운성 궁합 분석
+ */
+function analyzeSibiunseongCompatibility(
+  advanced1: AdvancedSajuAnalysis,
+  advanced2: AdvancedSajuAnalysis
+) {
+  const u1 = advanced1.sibiunseong
+  const u2 = advanced2.sibiunseong
+
+  // 일주의 운성이 가장 중요
+  const dayUnseong1 = u1.day
+  const dayUnseong2 = u2.day
+
+  // 에너지 균형 점수
+  let energyBalance = 50
+
+  // 강한 운성 (제왕, 건록, 장생)과 약한 운성 (사, 절, 병)의 조합은 보완적
+  const strong = ['제왕', '건록', '장생']
+  const weak = ['사', '절', '병']
+
+  if ((strong.includes(dayUnseong1) && weak.includes(dayUnseong2)) ||
+      (weak.includes(dayUnseong1) && strong.includes(dayUnseong2))) {
+    energyBalance += 20
+  }
+
+  // 둘 다 강하면 충돌 가능
+  if (strong.includes(dayUnseong1) && strong.includes(dayUnseong2)) {
+    energyBalance -= 10
+  }
+
+  // 둘 다 약하면 문제
+  if (weak.includes(dayUnseong1) && weak.includes(dayUnseong2)) {
+    energyBalance -= 15
+  }
+
+  // 중간 운성끼리는 무난
+  const moderate = ['관대', '목욕', '쇠', '묘', '태', '양']
+  if (moderate.includes(dayUnseong1) && moderate.includes(dayUnseong2)) {
+    energyBalance += 10
+  }
+
+  // 생애 주기 매칭
+  let lifeStageMatch = ''
+  if ((strong.includes(dayUnseong1) && weak.includes(dayUnseong2)) ||
+      (weak.includes(dayUnseong1) && strong.includes(dayUnseong2))) {
+    lifeStageMatch = '보완적 - 서로의 부족함을 채워주는 관계'
+  } else if (strong.includes(dayUnseong1) && strong.includes(dayUnseong2)) {
+    lifeStageMatch = '경쟁적 - 둘 다 강해서 주도권 다툼 가능'
+  } else if (weak.includes(dayUnseong1) && weak.includes(dayUnseong2)) {
+    lifeStageMatch = '공감적 - 어려움을 함께 이해하는 관계'
+  } else {
+    lifeStageMatch = '안정적 - 평온한 관계 유지'
+  }
+
+  return {
+    energyBalance: Math.max(0, Math.min(100, energyBalance)),
+    lifeStageMatch
+  }
 }

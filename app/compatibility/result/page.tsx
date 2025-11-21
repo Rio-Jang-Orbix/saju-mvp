@@ -3,7 +3,7 @@
 import { Suspense, useMemo, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { calculateCompatibility } from '@/lib/saju/compatibility'
-import { Heart, Users, TrendingUp, TrendingDown, Lightbulb, ArrowLeft, Share2, Sparkles, Loader2 } from 'lucide-react'
+import { Heart, Users, TrendingUp, TrendingDown, Lightbulb, ArrowLeft, Share2, Sparkles, Loader2, Zap, Star } from 'lucide-react'
 import Link from 'next/link'
 
 function CompatibilityResultContent() {
@@ -297,6 +297,129 @@ function CompatibilityResultContent() {
               </div>
             </div>
           </div>
+        )}
+
+        {/* 고급 이론 궁합 분석 */}
+        {result.advancedAnalysis && (
+          <>
+            {/* 통변성 궁합 */}
+            <div className="max-w-4xl mx-auto mb-8">
+              <div className="backdrop-blur-xl bg-white/10 rounded-2xl p-6 sm:p-8 border border-white/20">
+                <h3 className="text-2xl font-bold text-pink-300 mb-6 flex items-center gap-3">
+                  <Users size={32} />
+                  통변성 궁합 (십신 분석)
+                </h3>
+                <div className="mb-6">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-purple-200">성격/재능 조화도</span>
+                    <span className="text-2xl font-bold text-white">{result.advancedAnalysis.tongbyeonCompatibility.score}점</span>
+                  </div>
+                  <div className="h-3 bg-white/20 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full bg-gradient-to-r ${getScoreColor(result.advancedAnalysis.tongbyeonCompatibility.score)} transition-all duration-1000`}
+                      style={{ width: `${result.advancedAnalysis.tongbyeonCompatibility.score}%` }}
+                    />
+                  </div>
+                </div>
+
+                {result.advancedAnalysis.tongbyeonCompatibility.complementary.length > 0 && (
+                  <div className="mb-4 p-4 bg-green-500/10 border border-green-500/30 rounded-xl">
+                    <div className="text-green-300 font-semibold mb-2">✓ 보완적인 성향</div>
+                    <div className="text-purple-100 text-sm">
+                      {result.advancedAnalysis.tongbyeonCompatibility.complementary.join(', ')}
+                    </div>
+                  </div>
+                )}
+
+                {result.advancedAnalysis.tongbyeonCompatibility.conflicting.length > 0 && (
+                  <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-xl">
+                    <div className="text-red-300 font-semibold mb-2">⚠ 충돌 가능성</div>
+                    <div className="text-purple-100 text-sm">
+                      {result.advancedAnalysis.tongbyeonCompatibility.conflicting.join(', ')}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* 신살 궁합 */}
+            <div className="max-w-4xl mx-auto mb-8">
+              <div className="backdrop-blur-xl bg-white/10 rounded-2xl p-6 sm:p-8 border border-white/20">
+                <h3 className="text-2xl font-bold text-yellow-300 mb-6 flex items-center gap-3">
+                  <Star size={32} />
+                  신살 궁합 분석
+                </h3>
+                <div className="mb-6">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-purple-200">운세 균형 점수</span>
+                    <span className="text-2xl font-bold text-white">{result.advancedAnalysis.sinsalCompatibility.balanceScore}점</span>
+                  </div>
+                  <div className="h-3 bg-white/20 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full bg-gradient-to-r ${getScoreColor(result.advancedAnalysis.sinsalCompatibility.balanceScore)} transition-all duration-1000`}
+                      style={{ width: `${result.advancedAnalysis.sinsalCompatibility.balanceScore}%` }}
+                    />
+                  </div>
+                </div>
+
+                {result.advancedAnalysis.sinsalCompatibility.sharedGoodSinsals.length > 0 && (
+                  <div className="mb-4 p-4 bg-green-500/10 border border-green-500/30 rounded-xl">
+                    <div className="text-green-300 font-semibold mb-2">⭐ 공통 길신</div>
+                    <div className="text-purple-100 text-sm">
+                      {result.advancedAnalysis.sinsalCompatibility.sharedGoodSinsals.join(', ')}
+                    </div>
+                  </div>
+                )}
+
+                {result.advancedAnalysis.sinsalCompatibility.sharedBadSinsals.length > 0 && (
+                  <div className="p-4 bg-orange-500/10 border border-orange-500/30 rounded-xl">
+                    <div className="text-orange-300 font-semibold mb-2">⚠ 공통 흉살</div>
+                    <div className="text-purple-100 text-sm">
+                      {result.advancedAnalysis.sinsalCompatibility.sharedBadSinsals.join(', ')}
+                    </div>
+                  </div>
+                )}
+
+                {result.advancedAnalysis.sinsalCompatibility.sharedGoodSinsals.length === 0 &&
+                 result.advancedAnalysis.sinsalCompatibility.sharedBadSinsals.length === 0 && (
+                  <div className="p-4 bg-white/5 rounded-xl">
+                    <div className="text-purple-200 text-sm text-center">
+                      공통 신살이 없어 각자의 운세가 독립적입니다
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* 십이운성 궁합 */}
+            <div className="max-w-4xl mx-auto mb-8">
+              <div className="backdrop-blur-xl bg-white/10 rounded-2xl p-6 sm:p-8 border border-white/20">
+                <h3 className="text-2xl font-bold text-blue-300 mb-6 flex items-center gap-3">
+                  <Zap size={32} />
+                  십이운성 궁합 (생애 에너지)
+                </h3>
+                <div className="mb-6">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-purple-200">에너지 균형 점수</span>
+                    <span className="text-2xl font-bold text-white">{result.advancedAnalysis.sibiunseongCompatibility.energyBalance}점</span>
+                  </div>
+                  <div className="h-3 bg-white/20 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full bg-gradient-to-r ${getScoreColor(result.advancedAnalysis.sibiunseongCompatibility.energyBalance)} transition-all duration-1000`}
+                      style={{ width: `${result.advancedAnalysis.sibiunseongCompatibility.energyBalance}%` }}
+                    />
+                  </div>
+                </div>
+
+                <div className="p-4 bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/30 rounded-xl">
+                  <div className="text-blue-300 font-semibold mb-2">생애 주기 매칭</div>
+                  <div className="text-purple-100 text-sm">
+                    {result.advancedAnalysis.sibiunseongCompatibility.lifeStageMatch}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
         )}
 
         {/* AI 해석 */}

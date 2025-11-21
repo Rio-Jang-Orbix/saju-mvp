@@ -54,16 +54,34 @@ export async function POST(request: NextRequest) {
 [자동 분석된 관계]
 ${compatibilityResult.relationships.map(r => `- ${r.description} (${r.pillars.join(', ')})`).join('\n')}
 
+${compatibilityResult.advancedAnalysis ? `
+[고급 이론 분석]
+★ 통변성 궁합 (십신)
+- 점수: ${compatibilityResult.advancedAnalysis.tongbyeonCompatibility.score}점
+- 보완적 성향: ${compatibilityResult.advancedAnalysis.tongbyeonCompatibility.complementary.join(', ') || '없음'}
+- 충돌 가능 성향: ${compatibilityResult.advancedAnalysis.tongbyeonCompatibility.conflicting.join(', ') || '없음'}
+
+★ 신살 궁합
+- 운세 균형: ${compatibilityResult.advancedAnalysis.sinsalCompatibility.balanceScore}점
+- 공통 길신: ${compatibilityResult.advancedAnalysis.sinsalCompatibility.sharedGoodSinsals.join(', ') || '없음'}
+- 공통 흉살: ${compatibilityResult.advancedAnalysis.sinsalCompatibility.sharedBadSinsals.join(', ') || '없음'}
+
+★ 십이운성 궁합
+- 에너지 균형: ${compatibilityResult.advancedAnalysis.sibiunseongCompatibility.energyBalance}점
+- 생애 주기 매칭: ${compatibilityResult.advancedAnalysis.sibiunseongCompatibility.lifeStageMatch}
+` : ''}
+
 다음 항목들을 포함하여 상세하고 따뜻한 궁합 해석을 작성해주세요:
 
-1. **종합 평가**: 두 사람의 궁합을 전반적으로 평가
-2. **성격 및 가치관 조화**: 천간 조화도를 바탕으로 생각과 가치관의 조화 분석
-3. **생활 패턴 조화**: 지지 조화도를 바탕으로 생활 습관과 리듬의 조화 분석
+1. **종합 평가**: 두 사람의 궁합을 전반적으로 평가 (고급 이론 점수 포함)
+2. **성격 및 가치관 조화**: 천간 조화도와 통변성 분석을 바탕으로 생각과 가치관의 조화 분석
+3. **생활 패턴 조화**: 지지 조화도와 십이운성을 바탕으로 생활 습관과 리듬의 조화 분석
 4. **오행 균형 분석**: 두 사람의 오행이 서로 어떻게 보완되는지 분석
-5. **연애/결혼 궁합**: 연애와 결혼 생활에서의 조화와 주의사항
-6. **직업 및 재물 궁합**: 함께 일하거나 재물을 관리할 때의 조화
-7. **소통 및 갈등 해결**: 두 사람의 소통 방식과 갈등 해결 조언
-8. **장기적 관계 조언**: 오래도록 좋은 관계를 유지하기 위한 구체적 조언
+5. **운세 및 신살 조화**: 신살 분석을 바탕으로 두 사람의 운세 조화 평가
+6. **연애/결혼 궁합**: 연애와 결혼 생활에서의 조화와 주의사항
+7. **직업 및 재물 궁합**: 함께 일하거나 재물을 관리할 때의 조화 (통변성 기반)
+8. **소통 및 갈등 해결**: 두 사람의 소통 방식과 갈등 해결 조언
+9. **장기적 관계 조언**: 오래도록 좋은 관계를 유지하기 위한 구체적 조언
 
 각 섹션을 명확히 구분하고, 긍정적이면서도 현실적인 조언을 제공해주세요.
 따뜻하고 희망적인 톤을 유지하되, 개선이 필요한 부분은 솔직하게 언급해주세요.`
