@@ -3,7 +3,8 @@
 import { Suspense, useMemo, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { calculateCompatibility } from '@/lib/saju/compatibility'
-import { Heart, Users, TrendingUp, TrendingDown, Lightbulb, ArrowLeft, Share2, Sparkles, Loader2, Zap, Star } from 'lucide-react'
+import { Heart, Users, TrendingUp, TrendingDown, Lightbulb, ArrowLeft, Sparkles, Loader2, Zap, Star } from 'lucide-react'
+import { ShareButtons } from '@/components/share/ShareButtons'
 import Link from 'next/link'
 
 function CompatibilityResultContent() {
@@ -467,22 +468,22 @@ function CompatibilityResultContent() {
         </div>
 
         {/* 공유 버튼 */}
-        <div className="max-w-4xl mx-auto text-center">
-          <button
-            onClick={() => {
-              const text = `${person1.name}님과 ${person2.name}님의 궁합 점수는 ${result.score}점입니다! 🔮`
-              if (navigator.share) {
-                navigator.share({ title: '궁합 분석 결과', text })
-              } else {
-                navigator.clipboard.writeText(text)
-                alert('클립보드에 복사되었습니다!')
-              }
-            }}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-pink-500 to-purple-500 text-white font-semibold rounded-xl hover:scale-105 transition-transform"
-          >
-            <Share2 size={20} />
-            결과 공유하기
-          </button>
+        <div className="max-w-4xl mx-auto">
+          <div className="backdrop-blur-xl bg-white/10 rounded-2xl p-6 sm:p-8 border border-white/20">
+            <h3 className="text-xl font-bold text-white mb-6 text-center flex items-center justify-center gap-2">
+              <Heart size={24} className="text-pink-300" />
+              결과 공유하기
+            </h3>
+            <ShareButtons
+              title={`${person1.name}님과 ${person2.name}님의 궁합 결과`}
+              description={`궁합 점수 ${result.score}점! ${result.score >= 80 ? '매우 잘 맞는 궁합입니다!' : result.score >= 60 ? '좋은 궁합입니다' : '함께 노력하면 좋은 관계가 될 수 있어요'} 사주팔자 분석에서 무료로 궁합을 확인해보세요.`}
+              hashtags={['궁합', '사주팔자', '운세', 'AI사주']}
+              variant="grid"
+              size="md"
+              showLabel={true}
+              className="[&>button]:bg-gradient-to-r [&>button]:from-pink-500 [&>button]:to-purple-500"
+            />
+          </div>
         </div>
       </div>
     </div>

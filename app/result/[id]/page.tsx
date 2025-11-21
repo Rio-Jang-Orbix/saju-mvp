@@ -7,7 +7,8 @@ import { Toaster } from '@/components/ui/sonner'
 import AnalysisResult from '@/components/analyze/AnalysisResult'
 import ReplyCards from '@/components/analyze/ReplyCards'
 import { AnalysisResult as AnalysisResultType, Reply } from '@/types'
-import { CheckCircle, AlertCircle, Target, ArrowRight, RefreshCw, Brain } from 'lucide-react'
+import { CheckCircle, AlertCircle, Target, ArrowRight, RefreshCw, Brain, Share2 } from 'lucide-react'
+import { ShareButtons } from '@/components/share/ShareButtons'
 import { Card, CardContent } from '@/components/ui/card'
 
 interface ResultPageProps {
@@ -710,6 +711,31 @@ export default function ResultPage({ params }: ResultPageProps) {
                 </CardContent>
               </Card>
             </div>
+          </div>
+
+          {/* 공유하기 섹션 */}
+          <div className="relative py-12">
+            <div className="text-center mb-8">
+              <h2 className="text-3xl luxury-title text-luxury-charcoal mb-4">
+                <Share2 className="inline mr-2 text-luxury-gold" size={28} />
+                <span className="text-gradient-luxury">결과 공유하기</span>
+              </h2>
+              <p className="text-luxury-bronze luxury-subtitle">
+                친구들과 분석 결과를 공유해보세요
+              </p>
+            </div>
+            <Card className="max-w-2xl mx-auto bg-white border border-luxury-gold rounded-2xl luxury-shadow">
+              <CardContent className="p-6 sm:p-8">
+                <ShareButtons
+                  title="연애 성향 분석 결과"
+                  description={`감정 분석: ${analysisData?.emotion?.description || '긍정적 반응'} | 성공률 ${analysisData?.emotion?.confidence ? Math.round(analysisData.emotion.confidence * 100) : 85}% | AI가 분석한 연애 성향 결과를 확인해보세요!`}
+                  hashtags={['연애상담', 'AI분석', '대화분석', '연애팁']}
+                  variant="grid"
+                  size="md"
+                  showLabel={true}
+                />
+              </CardContent>
+            </Card>
           </div>
 
           {/* Navigation */}
