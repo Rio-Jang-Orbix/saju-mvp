@@ -5,12 +5,15 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { calculateSaju, getElementName, getElementColor, type SajuResult, type Element } from '@/lib/saju/calculator'
 import { sajuToText, copyToClipboard, shareViaNative } from '@/lib/saju/share'
-import { Sparkles, ArrowLeft, Loader2, Star, Share2, Copy } from 'lucide-react'
+import { calculateDaeun, calculateKoreanAge } from '@/lib/saju/daeun'
+import type { DaeunResult } from '@/lib/saju/daeun'
+import { Sparkles, ArrowLeft, Loader2, Star, Share2, Copy, TrendingUp } from 'lucide-react'
 
 function AnalyzePageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [sajuResult, setSajuResult] = useState<SajuResult | null>(null)
+  const [daeunResult, setDaeunResult] = useState<DaeunResult | null>(null)
   const [isCalculating, setIsCalculating] = useState(true)
   const [aiInterpretation, setAiInterpretation] = useState<string>('')
   const [isLoadingAI, setIsLoadingAI] = useState(false)
@@ -39,6 +42,12 @@ function AnalyzePageContent() {
           gender
         )
         setSajuResult(result)
+
+        // 대운 계산
+        const currentAge = calculateKoreanAge(year)
+        const daeun = calculateDaeun(result, currentAge)
+        setDaeunResult(daeun)
+
         setIsCalculating(false)
       }, 1500)
     } else {
@@ -240,6 +249,85 @@ function AnalyzePageContent() {
             </div>
           </div>
         </div>
+
+        {/* 대운 분석 */}
+        {daeunResult && (
+          <div className="mb-12">
+            <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
+              <TrendingUp className="text-green-300" />
+              대운 분석 (大運)
+            </h2>
+            <div className="backdrop-blur-xl bg-white/10 rounded-2xl p-8 border border-white/20">
+              {/* 현재 대운 */}
+              {daeunResult.currentPeriod && (
+                <div className="mb-8 p-6 bg-gradient-to-r from-green-500/20 to-emerald-500/20 border-2 border-green-500/50 rounded-xl">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-2xl font-bold text-green-300">현재 대운</h3>
+                    <div className="text-green-200 text-lg">
+                      {daeunResult.currentPeriod.startAge}세 ~ {daeunResult.currentPeriod.endAge}세
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="text-5xl font-bold text-white">
+                      {daeunResult.currentPeriod.heavenlyStem}{daeunResult.currentPeriod.earthlyBranch}
+                    </div>
+                    <div className="text-green-100 text-lg">
+                      {daeunResult.currentPeriod.description}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* 다음 대운 */}
+              {daeunResult.nextPeriod && (
+                <div className="mb-6 p-6 bg-white/5 rounded-xl">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-xl font-bold text-purple-300">다음 대운</h3>
+                    <div className="text-purple-200">
+                      {daeunResult.nextPeriod.startAge}세 ~ {daeunResult.nextPeriod.endAge}세
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <div className="text-4xl font-bold text-white">
+                      {daeunResult.nextPeriod.heavenlyStem}{daeunResult.nextPeriod.earthlyBranch}
+                    </div>
+                    <div className="text-purple-100">
+                      {daeunResult.nextPeriod.description}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* 전체 대운 타임라인 */}
+              <div className="mt-6">
+                <h3 className="text-lg font-bold text-white mb-4">대운 타임라인</h3>
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                  {daeunResult.periods.map((period, idx) => (
+                    <div
+                      key={idx}
+                      className={`p-4 rounded-xl text-center transition-all ${
+                        daeunResult.currentPeriod &&
+                        period.startAge === daeunResult.currentPeriod.startAge
+                          ? 'bg-green-500/30 border-2 border-green-500 scale-105'
+                          : 'bg-white/5 border border-white/20 hover:bg-white/10'
+                      }`}
+                    >
+                      <div className="text-purple-200 text-sm mb-1">
+                        {period.startAge}-{period.endAge}세
+                      </div>
+                      <div className="text-2xl font-bold text-white mb-1">
+                        {period.heavenlyStem}{period.earthlyBranch}
+                      </div>
+                      <div className="text-xs text-purple-300 line-clamp-2">
+                        {period.description.split(',')[0]}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* AI 해석 */}
         <div className="mb-12">

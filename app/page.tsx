@@ -3,7 +3,8 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { Calendar, Clock, Sparkles, Star, Moon, Sun } from 'lucide-react'
+import { Calendar, Clock, Sparkles, Star, Moon, Sun, Heart, TrendingUp } from 'lucide-react'
+import Link from 'next/link'
 
 export default function HomePage() {
   const router = useRouter()
@@ -236,6 +237,48 @@ export default function HomePage() {
             <p className="text-center text-sm text-purple-200 mt-6 opacity-80">
               ⭐ 무료 기본 분석 제공 · 프리미엄 상세 해석 이용 가능 ⭐
             </p>
+          </div>
+
+          {/* 추가 기능 */}
+          <div className="mt-12 max-w-4xl mx-auto">
+            <h2 className="text-2xl font-bold text-center text-transparent bg-clip-text bg-gradient-to-r from-pink-200 via-purple-200 to-indigo-200 mb-6">
+              다른 기능 둘러보기
+            </h2>
+            <div className="grid md:grid-cols-2 gap-6">
+              {/* 궁합 분석 */}
+              <Link href="/compatibility">
+                <div className="backdrop-blur-xl bg-white/10 rounded-2xl p-6 border border-white/20 hover:bg-white/15 transition-all hover:scale-105 cursor-pointer group">
+                  <div className="text-5xl mb-4 group-hover:scale-110 transition-transform">
+                    <Heart className="inline text-pink-300" size={48} />
+                  </div>
+                  <h3 className="text-2xl font-bold text-pink-200 mb-3">궁합 분석</h3>
+                  <p className="text-purple-200 text-sm mb-4">
+                    두 사람의 사주팔자로 궁합을 알아보세요. 천간지지 조화도와 오행 분석으로 관계를 진단합니다.
+                  </p>
+                  <div className="flex items-center gap-2 text-pink-300 text-sm font-semibold">
+                    <span>분석하기</span>
+                    <span className="group-hover:translate-x-1 transition-transform">→</span>
+                  </div>
+                </div>
+              </Link>
+
+              {/* 월운/일운 */}
+              <Link href="/fortune">
+                <div className="backdrop-blur-xl bg-white/10 rounded-2xl p-6 border border-white/20 hover:bg-white/15 transition-all hover:scale-105 cursor-pointer group">
+                  <div className="text-5xl mb-4 group-hover:scale-110 transition-transform">
+                    <Calendar className="inline text-purple-300" size={48} />
+                  </div>
+                  <h3 className="text-2xl font-bold text-purple-200 mb-3">월운 · 일운</h3>
+                  <p className="text-purple-200 text-sm mb-4">
+                    이번 달과 오늘의 운세를 확인하세요. 나의 사주와 오늘의 운을 분석합니다.
+                  </p>
+                  <div className="flex items-center gap-2 text-purple-300 text-sm font-semibold">
+                    <span>확인하기</span>
+                    <span className="group-hover:translate-x-1 transition-transform">→</span>
+                  </div>
+                </div>
+              </Link>
+            </div>
           </div>
 
           {/* Footer */}
