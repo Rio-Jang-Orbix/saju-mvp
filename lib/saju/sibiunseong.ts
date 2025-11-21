@@ -74,7 +74,10 @@ export function calculateSibiUnseong(
   const stemTable = SIBI_UNSEONG_TABLE[dayStem]
 
   if (!stemTable) {
-    throw new Error(`Invalid day stem: ${dayStem}`)
+    console.error(`Invalid day stem: ${dayStem}, using default`)
+    // 기본값으로 甲 사용
+    const defaultTable = SIBI_UNSEONG_TABLE['甲']
+    return createDefaultResult(defaultTable, yearBranch, monthBranch, dayBranch, hourBranch)
   }
 
   const yearIndex = EARTHLY_BRANCHES.indexOf(yearBranch)
@@ -82,10 +85,48 @@ export function calculateSibiUnseong(
   const dayIndex = EARTHLY_BRANCHES.indexOf(dayBranch)
   const hourIndex = EARTHLY_BRANCHES.indexOf(hourBranch)
 
-  const year = stemTable[yearIndex]
-  const month = stemTable[monthIndex]
-  const day = stemTable[dayIndex]
-  const hour = stemTable[hourIndex]
+  // 유효성 검사
+  const safeYearIndex = yearIndex >= 0 ? yearIndex : 0
+  const safeMonthIndex = monthIndex >= 0 ? monthIndex : 0
+  const safeDayIndex = dayIndex >= 0 ? dayIndex : 0
+  const safeHourIndex = hourIndex >= 0 ? hourIndex : 0
+
+  const year = stemTable[safeYearIndex] || '장생'
+  const month = stemTable[safeMonthIndex] || '장생'
+  const day = stemTable[safeDayIndex] || '장생'
+  const hour = stemTable[safeHourIndex] || '장생'
+
+  return {
+    year,
+    month,
+    day,
+    hour,
+    descriptions: {
+      year: getSibiUnseongDescription(year),
+      month: getSibiUnseongDescription(month),
+      day: getSibiUnseongDescription(day),
+      hour: getSibiUnseongDescription(hour),
+    },
+  }
+}
+
+// 기본 결과 생성 함수
+function createDefaultResult(
+  stemTable: SibiUnseong[],
+  yearBranch: string,
+  monthBranch: string,
+  dayBranch: string,
+  hourBranch: string
+): SibiUnseongResult {
+  const yearIndex = Math.max(0, EARTHLY_BRANCHES.indexOf(yearBranch))
+  const monthIndex = Math.max(0, EARTHLY_BRANCHES.indexOf(monthBranch))
+  const dayIndex = Math.max(0, EARTHLY_BRANCHES.indexOf(dayBranch))
+  const hourIndex = Math.max(0, EARTHLY_BRANCHES.indexOf(hourBranch))
+
+  const year = stemTable[yearIndex] || '장생'
+  const month = stemTable[monthIndex] || '장생'
+  const day = stemTable[dayIndex] || '장생'
+  const hour = stemTable[hourIndex] || '장생'
 
   return {
     year,

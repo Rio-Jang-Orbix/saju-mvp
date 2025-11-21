@@ -102,7 +102,8 @@ export function getTongByeonSeong(dayStem: string, targetStem: string): TongByeo
   const targetInfo = STEM_INFO[targetStem]
 
   if (!dayInfo || !targetInfo) {
-    throw new Error(`Invalid stems: ${dayStem}, ${targetStem}`)
+    console.error(`Invalid stems: ${dayStem}, ${targetStem}, using default`)
+    return '비견' // 기본값 반환
   }
 
   const dayElement = dayInfo.element
@@ -134,8 +135,8 @@ export function getTongByeonSeong(dayStem: string, targetStem: string): TongByeo
     return sameYinYang ? '편인' : '정인'
   }
 
-  // 여기 도달하면 안 됨
-  throw new Error('Cannot determine TongByeonSeong')
+  // 기본값 반환
+  return '비견'
 }
 
 /**
@@ -146,7 +147,8 @@ function getTongByeonSeongForBranch(dayStem: string, targetBranch: string): Tong
   const targetElement = BRANCH_ELEMENT[targetBranch]
 
   if (!dayInfo || !targetElement) {
-    throw new Error(`Invalid stem/branch: ${dayStem}, ${targetBranch}`)
+    console.error(`Invalid stem/branch: ${dayStem}, ${targetBranch}, using default`)
+    return '비견' // 기본값 반환
   }
 
   const dayElement = dayInfo.element
@@ -179,7 +181,8 @@ function getTongByeonSeongForBranch(dayStem: string, targetBranch: string): Tong
     return '정인'
   }
 
-  throw new Error('Cannot determine TongByeonSeong for branch')
+  // 기본값 반환
+  return '비견'
 }
 
 /**
