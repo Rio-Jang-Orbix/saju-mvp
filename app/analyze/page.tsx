@@ -439,6 +439,36 @@ function AnalyzePageContent() {
                       {daeunResult.currentPeriod.description}
                     </div>
                   </div>
+
+                  {/* 고급 이론 정보 */}
+                  {daeunResult.currentPeriod.advanced && (
+                    <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
+                      <div className="p-3 bg-white/5 rounded-lg">
+                        <div className="text-xs text-green-200 mb-1">십이운성</div>
+                        <div className="text-lg font-bold text-white">{daeunResult.currentPeriod.advanced.sibiunseong.stem}</div>
+                      </div>
+                      <div className="p-3 bg-white/5 rounded-lg">
+                        <div className="text-xs text-green-200 mb-1">통변성</div>
+                        <div className="text-lg font-bold text-white">{daeunResult.currentPeriod.advanced.tongbyeon.stem}</div>
+                      </div>
+                      <div className="p-3 bg-white/5 rounded-lg">
+                        <div className="text-xs text-green-200 mb-1">에너지</div>
+                        <div className={`text-lg font-bold ${
+                          daeunResult.currentPeriod.advanced.energy === '강' ? 'text-green-300' :
+                          daeunResult.currentPeriod.advanced.energy === '약' ? 'text-orange-300' :
+                          'text-yellow-300'
+                        }`}>
+                          {daeunResult.currentPeriod.advanced.energy}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {daeunResult.currentPeriod.advanced && (
+                    <div className="mt-3 p-3 bg-green-500/10 rounded-lg">
+                      <div className="text-sm text-green-100">{daeunResult.currentPeriod.advanced.interaction}</div>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -451,7 +481,7 @@ function AnalyzePageContent() {
                       {daeunResult.nextPeriod.startAge}세 ~ {daeunResult.nextPeriod.endAge}세
                     </div>
                   </div>
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-4 mb-3">
                     <div className="text-4xl font-bold text-white">
                       {daeunResult.nextPeriod.heavenlyStem}{daeunResult.nextPeriod.earthlyBranch}
                     </div>
@@ -459,6 +489,14 @@ function AnalyzePageContent() {
                       {daeunResult.nextPeriod.description}
                     </div>
                   </div>
+
+                  {daeunResult.nextPeriod.advanced && (
+                    <div className="flex items-center gap-3 text-sm">
+                      <span className="text-purple-200">
+                        {daeunResult.nextPeriod.advanced.sibiunseong.stem} · {daeunResult.nextPeriod.advanced.tongbyeon.stem} · 에너지 {daeunResult.nextPeriod.advanced.energy}
+                      </span>
+                    </div>
+                  )}
                 </div>
               )}
 

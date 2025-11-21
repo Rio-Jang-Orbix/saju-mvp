@@ -97,7 +97,7 @@ function controls(element1: string, element2: string): boolean {
 /**
  * 두 천간 사이의 통변성 계산
  */
-function getTongByeonSeong(dayStem: string, targetStem: string): TongByeonSeong {
+export function getTongByeonSeong(dayStem: string, targetStem: string): TongByeonSeong {
   const dayInfo = STEM_INFO[dayStem]
   const targetInfo = STEM_INFO[targetStem]
 

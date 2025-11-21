@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import OpenAI from 'openai'
 import type { FortuneCalendar } from '@/lib/saju/fortune'
 import type { SajuResult } from '@/lib/saju/calculator'
+import { analyzeAdvancedSaju } from '@/lib/saju/advanced'
 
 const openai = process.env.OPENAI_API_KEY
   ? new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
@@ -15,9 +16,12 @@ export async function POST(request: NextRequest) {
       sajuResult: SajuResult
     }
 
+    // 고급 이론 분석
+    const advancedAnalysis = analyzeAdvancedSaju(sajuResult)
+
     // OpenAI API가 설정되지 않은 경우 Mock 데이터 반환
     if (!openai) {
-      const mockInterpretation = generateMockFortuneInterpretation(fortuneCalendar, sajuResult)
+      const mockInterpretation = generateMockFortuneInterpretation(fortuneCalendar, sajuResult, advancedAnalysis)
       return NextResponse.json({ interpretation: mockInterpretation })
     }
 
@@ -31,6 +35,11 @@ export async function POST(request: NextRequest) {
 - 시주: ${sajuResult.hour.heavenlyStem}${sajuResult.hour.earthlyBranch}
 - 오행: 木${sajuResult.elements.wood} 火${sajuResult.elements.fire} 土${sajuResult.elements.earth} 金${sajuResult.elements.metal} 水${sajuResult.elements.water}
 - 성별: ${sajuResult.birthInfo.gender === 'male' ? '남성' : '여성'}
+
+[고급 사주 이론]
+★ 십이운성: 년주(${advancedAnalysis.sibiunseong.year}) 월주(${advancedAnalysis.sibiunseong.month}) 일주(${advancedAnalysis.sibiunseong.day}) 시주(${advancedAnalysis.sibiunseong.hour})
+★ 주요 통변성: ${advancedAnalysis.tongbyeon.dominant.join(', ')}
+★ 신살: 길신 ${advancedAnalysis.sinsal.summary.goodCount}개, 흉살 ${advancedAnalysis.sinsal.summary.badCount}개
 
 [이번 달 운세]
 - 월주: ${fortuneCalendar.currentMonth.heavenlyStem}${fortuneCalendar.currentMonth.earthlyBranch}
@@ -50,17 +59,17 @@ export async function POST(request: NextRequest) {
 
 다음 항목들을 포함하여 상세하고 실용적인 운세 해석을 작성해주세요:
 
-1. **이번 달 전체 운세**: 월주와 사용자 사주의 조화를 바탕으로 이번 달의 전반적인 흐름 예측
-2. **이번 달 핵심 조언**: 이번 달 특히 주의하거나 집중해야 할 사항
+1. **이번 달 전체 운세**: 월주와 사용자 사주의 조화를 바탕으로 이번 달의 전반적인 흐름 예측 (십이운성과 통변성 고려)
+2. **이번 달 핵심 조언**: 이번 달 특히 주의하거나 집중해야 할 사항 (신살 영향 포함)
 3. **오늘의 종합 운세**: 오늘 하루의 전반적인 운세와 에너지
-4. **오늘의 분야별 운세**:
-   - 업무/학업운
-   - 금전운
-   - 대인관계운
-   - 건강운
-   - 연애/가정운
+4. **오늘의 분야별 운세** (통변성 기반 분석):
+   - 업무/학업운 (문창귀인, 정인 등 고려)
+   - 금전운 (재성 통변성 고려)
+   - 대인관계운 (비견, 겁재 등 고려)
+   - 건강운 (십이운성 에너지 고려)
+   - 연애/가정운 (도화살 등 신살 고려)
 5. **오늘의 실천 사항**: 오늘 하면 좋은 구체적인 행동 3가지
-6. **오늘의 주의 사항**: 오늘 피하거나 조심해야 할 것들
+6. **오늘의 주의 사항**: 오늘 피하거나 조심해야 할 것들 (흉살 주의)
 7. **내일 준비**: 내일을 위해 오늘 준비하면 좋은 것들
 
 실용적이고 구체적인 조언을 제공하되, 희망적이고 긍정적인 톤을 유지해주세요.
@@ -97,7 +106,8 @@ export async function POST(request: NextRequest) {
 
 function generateMockFortuneInterpretation(
   fortuneCalendar: FortuneCalendar,
-  sajuResult: SajuResult
+  sajuResult: SajuResult,
+  advancedAnalysis: any
 ): string {
   const monthTheme = fortuneCalendar.currentMonth.theme
   const todayCompatibility = fortuneCalendar.today.compatibility
@@ -111,7 +121,19 @@ function generateMockFortuneInterpretation(
     warning: '주의가 필요한',
   }
 
+  // 주요 통변성과 신살 정보
+  const dominantTongbyeon = advancedAnalysis.tongbyeon.dominant.join(', ')
+  const hasMunChangGuiIn = advancedAnalysis.sinsal.summary.hasMunChangGuiIn
+  const hasCheonEulGuiIn = advancedAnalysis.sinsal.summary.hasCheonEulGuiIn
+  const dayUnseong = advancedAnalysis.sibiunseong.day
+
   return `🔮 ${sajuResult.birthInfo.year}년생 ${sajuResult.birthInfo.gender === 'male' ? '남성' : '여성'}의 월운·일운 해석
+
+【 고급 사주 분석 】
+✨ 일주 십이운성: ${dayUnseong} - 현재 생애 에너지가 ${dayUnseong === '제왕' || dayUnseong === '건록' ? '매우 강한' : dayUnseong === '장생' || dayUnseong === '관대' ? '성장하는' : dayUnseong === '쇠' || dayUnseong === '병' ? '쇠약한' : '중간'} 시기입니다.
+🎯 주요 성향: ${dominantTongbyeon}
+${hasCheonEulGuiIn ? '⭐ 천을귀인이 있어 귀인의 도움을 받습니다' : ''}
+${hasMunChangGuiIn ? '📚 문창귀인이 있어 학문과 문예에 재능이 있습니다' : ''}
 
 ## 🌙 이번 달 전체 운세
 

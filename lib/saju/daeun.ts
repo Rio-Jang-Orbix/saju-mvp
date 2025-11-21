@@ -1,4 +1,6 @@
 import { type SajuResult } from './calculator'
+import { calculateSibiUnseong, type SibiUnseong } from './sibiunseong'
+import { getTongByeonSeong, type TongByeonSeong } from './tongbyeon'
 
 export interface DaeunPeriod {
   startAge: number
@@ -13,6 +15,19 @@ export interface DaeunPeriod {
     water: number
   }
   description: string
+  // 고급 이론
+  advanced?: {
+    sibiunseong: {
+      stem: SibiUnseong
+      branch: SibiUnseong
+    }
+    tongbyeon: {
+      stem: TongByeonSeong
+      branch: TongByeonSeong
+    }
+    energy: '강' | '중' | '약' // 전반적인 에너지 강도
+    interaction: string // 원국과의 상호작용 설명
+  }
 }
 
 export interface DaeunResult {
@@ -113,6 +128,9 @@ export function calculateDaeun(saju: SajuResult, currentAge: number): DaeunResul
   // 대운은 보통 3세부터 시작 (간단히 1세부터 시작으로 설정)
   let startAge = 1
 
+  // 일간 추출 (고급 이론용)
+  const dayStem = saju.day.heavenlyStem
+
   // 10개의 대운 계산 (100세까지)
   for (let i = 0; i < 10; i++) {
     // 순행/역행에 따라 인덱스 이동
@@ -133,6 +151,9 @@ export function calculateDaeun(saju: SajuResult, currentAge: number): DaeunResul
     // 대운에 대한 간단한 설명
     const description = generateDaeunDescription(stem, branch, elements)
 
+    // 고급 이론 분석
+    const advanced = analyzeDaeunAdvanced(dayStem, stem, branch, saju)
+
     periods.push({
       startAge,
       endAge,
@@ -140,6 +161,7 @@ export function calculateDaeun(saju: SajuResult, currentAge: number): DaeunResul
       earthlyBranch: branch,
       elements,
       description,
+      advanced,
     })
 
     startAge += 10
@@ -233,4 +255,107 @@ export function calculateInternationalAge(
   }
 
   return age
+}
+
+/**
+ * 대운의 고급 이론 분석
+ */
+function analyzeDaeunAdvanced(
+  dayStem: string,
+  daeunStem: string,
+  daeunBranch: string,
+  saju: SajuResult
+): DaeunPeriod['advanced'] {
+  // 십이운성 계산 (대운 지지 기준)
+  const sibiunseongResult = calculateSibiUnseong(
+    dayStem,
+    daeunBranch, // 대운 지지를 년지로
+    daeunBranch,
+    daeunBranch,
+    daeunBranch
+  )
+
+  // 통변성 계산
+  const tongbyeonStem = getTongByeonSeong(dayStem, daeunStem)
+
+  // 지지는 간단히 처리
+  const branchElement = BRANCH_ELEMENTS[daeunBranch]
+  let tongbyeonBranch: TongByeonSeong = '비견'
+
+  // 간단한 통변성 판단 (오행 관계만 고려)
+  const dayStemElement = STEM_ELEMENTS[dayStem]
+  if (dayStemElement === branchElement) {
+    tongbyeonBranch = '비견'
+  } else if (generates(dayStemElement, branchElement)) {
+    tongbyeonBranch = '식신'
+  } else if (controls(dayStemElement, branchElement)) {
+    tongbyeonBranch = '편재'
+  } else if (controls(branchElement, dayStemElement)) {
+    tongbyeonBranch = '정관'
+  } else if (generates(branchElement, dayStemElement)) {
+    tongbyeonBranch = '정인'
+  }
+
+  // 에너지 강도 판단 (십이운성 기준)
+  const energy: '강' | '중' | '약' =
+    ['제왕', '건록', '장생'].includes(sibiunseongResult.year) ? '강' :
+    ['사', '절', '병'].includes(sibiunseongResult.year) ? '약' : '중'
+
+  // 원국과의 상호작용 분석
+  let interaction = ''
+
+  if (energy === '강') {
+    if (tongbyeonStem === '정인' || tongbyeonStem === '편인') {
+      interaction = '학문과 명예를 얻기 좋은 시기. 귀인의 도움이 많습니다.'
+    } else if (tongbyeonStem === '정재' || tongbyeonStem === '편재') {
+      interaction = '재물운이 좋고 사업 확장에 유리한 시기입니다.'
+    } else if (tongbyeonStem === '정관' || tongbyeonStem === '편관') {
+      interaction = '책임과 권한이 커지는 시기. 리더십을 발휘할 기회가 많습니다.'
+    } else if (tongbyeonStem === '식신' || tongbyeonStem === '상관') {
+      interaction = '창의성과 표현력이 빛나는 시기. 새로운 도전을 시작하기 좋습니다.'
+    } else {
+      interaction = '동료나 경쟁자와의 관계가 중요한 시기입니다.'
+    }
+  } else if (energy === '약') {
+    interaction = '몸과 마음을 다스리고 에너지를 충전하는 시기. 무리하지 말고 안정을 추구하세요.'
+  } else {
+    interaction = '안정적이고 평온한 시기. 꾸준한 노력이 좋은 결과를 만듭니다.'
+  }
+
+  return {
+    sibiunseong: {
+      stem: sibiunseongResult.year,
+      branch: sibiunseongResult.year,
+    },
+    tongbyeon: {
+      stem: tongbyeonStem,
+      branch: tongbyeonBranch,
+    },
+    energy,
+    interaction,
+  }
+}
+
+// 오행 상생
+function generates(element1: string, element2: string): boolean {
+  const generation: { [key: string]: string } = {
+    木: '火',
+    火: '土',
+    土: '金',
+    金: '水',
+    水: '木',
+  }
+  return generation[element1] === element2
+}
+
+// 오행 상극
+function controls(element1: string, element2: string): boolean {
+  const control: { [key: string]: string } = {
+    木: '土',
+    土: '水',
+    水: '火',
+    火: '金',
+    金: '木',
+  }
+  return control[element1] === element2
 }
