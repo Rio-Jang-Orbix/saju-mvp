@@ -20,6 +20,7 @@ function AnalyzePageContent() {
   const [aiInterpretation, setAiInterpretation] = useState<string>('')
   const [isLoadingAI, setIsLoadingAI] = useState(false)
   const [copySuccess, setCopySuccess] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     // URL 파라미터에서 데이터 가져오기
@@ -33,29 +34,48 @@ function AnalyzePageContent() {
 
     if (year && month && day) {
       // 약간의 딜레이로 로딩 효과
-      setTimeout(() => {
-        const result = calculateSaju(
-          year,
-          month,
-          day,
-          hour,
-          minute,
-          calendarType === 'lunar',
-          gender
-        )
-        setSajuResult(result)
+      const timeoutId = setTimeout(() => {
+        try {
+          const result = calculateSaju(
+            year,
+            month,
+            day,
+            hour,
+            minute,
+            calendarType === 'lunar',
+            gender
+          )
+          setSajuResult(result)
 
-        // 대운 계산
-        const currentAge = calculateKoreanAge(year)
-        const daeun = calculateDaeun(result, currentAge)
-        setDaeunResult(daeun)
+          // 대운 계산
+          const currentAge = calculateKoreanAge(year)
+          const daeun = calculateDaeun(result, currentAge)
+          setDaeunResult(daeun)
 
-        // 고급 이론 분석
-        const advanced = analyzeAdvancedSaju(result)
-        setAdvancedAnalysis(advanced)
+          // 고급 이론 분석
+          const advanced = analyzeAdvancedSaju(result)
+          setAdvancedAnalysis(advanced)
 
-        setIsCalculating(false)
+          setIsCalculating(false)
+        } catch (err) {
+          console.error('사주 계산 오류:', err)
+          setError('사주 계산 중 오류가 발생했습니다. 입력값을 확인해주세요.')
+          setIsCalculating(false)
+        }
       }, 1500)
+
+      // 타임아웃 설정 (10초)
+      const maxTimeoutId = setTimeout(() => {
+        if (isCalculating) {
+          setError('사주 계산이 너무 오래 걸리고 있습니다. 다시 시도해주세요.')
+          setIsCalculating(false)
+        }
+      }, 10000)
+
+      return () => {
+        clearTimeout(timeoutId)
+        clearTimeout(maxTimeoutId)
+      }
     } else {
       router.push('/')
     }
@@ -106,6 +126,47 @@ function AnalyzePageContent() {
           <div className="flex items-center justify-center gap-2 text-purple-200">
             <Loader2 className="animate-spin" size={24} />
             <p>천간지지를 분석하고 있습니다</p>
+          </div>
+          <div className="mt-6 text-sm text-purple-300">
+            잠시만 기다려 주세요 (최대 10초)
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // 에러 화면
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-indigo-950 via-purple-900 to-pink-900 flex items-center justify-center px-4">
+        <div className="max-w-md w-full">
+          <div className="backdrop-blur-xl bg-white/10 rounded-3xl p-8 border border-white/20 text-center">
+            <div className="text-6xl mb-6">⚠️</div>
+            <h2 className="text-2xl font-bold text-white mb-4">오류가 발생했습니다</h2>
+            <p className="text-purple-200 mb-6">{error}</p>
+            <div className="space-y-3">
+              <Button
+                onClick={() => router.push('/')}
+                className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-medium py-3 rounded-xl"
+              >
+                <ArrowLeft size={18} className="mr-2" />
+                처음으로 돌아가기
+              </Button>
+              <Button
+                onClick={() => window.location.reload()}
+                className="w-full bg-white/20 hover:bg-white/30 border border-white/30 text-white font-medium py-3 rounded-xl"
+              >
+                다시 시도하기
+              </Button>
+            </div>
+            <div className="mt-6 text-sm text-purple-300">
+              <p>문제가 계속되면 다음을 확인해주세요:</p>
+              <ul className="mt-2 text-left space-y-1 text-xs">
+                <li>• 생년월일이 올바른지 확인</li>
+                <li>• 음력/양력 선택이 정확한지 확인</li>
+                <li>• 브라우저를 새로고침 후 재시도</li>
+              </ul>
+            </div>
           </div>
         </div>
       </div>
