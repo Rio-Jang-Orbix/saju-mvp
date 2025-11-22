@@ -305,7 +305,7 @@ export function analyzeSeongmyeong(fullName: string, saju?: SajuResult): Seongmy
     },
     element: mainElement,
     elementBalance,
-    interpretation: generateInterpretation(result),
+    interpretation: '', // 아래에서 생성
   }
 
   // 사주와의 궁합 분석
@@ -313,6 +313,7 @@ export function analyzeSeongmyeong(fullName: string, saju?: SajuResult): Seongmy
     result.compatibility = analyzeSajuCompatibility(result, saju)
   }
 
+  // 해석 생성 (result 정의 후 호출)
   result.interpretation = generateInterpretation(result)
 
   return result
