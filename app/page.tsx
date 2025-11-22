@@ -19,10 +19,76 @@ export default function HomePage() {
   const [calendarType, setCalendarType] = useState<'solar' | 'lunar'>('solar')
   const [gender, setGender] = useState<'male' | 'female'>('male')
 
+  // 입력값 검증 함수
+  const validateInputs = (): string | null => {
+    // 이름 검증 (입력된 경우)
+    if (name) {
+      if (name.length < 2) {
+        return '이름은 최소 2글자 이상 입력해주세요.'
+      }
+      if (name.length > 10) {
+        return '이름은 10글자 이내로 입력해주세요.'
+      }
+      // 한글만 허용 (한글 자모, 완성형 한글)
+      const koreanRegex = /^[가-힣ㄱ-ㅎㅏ-ㅣ]+$/
+      if (!koreanRegex.test(name)) {
+        return '이름은 한글로만 입력해주세요.'
+      }
+    }
+
+    // 년도 검증
+    const year = parseInt(birthDate.year)
+    if (!birthDate.year) {
+      return '태어난 년도를 입력해주세요.'
+    }
+    if (isNaN(year) || year < 1900 || year > new Date().getFullYear()) {
+      return '년도는 1900년부터 현재까지 입력 가능합니다.'
+    }
+
+    // 월 검증
+    const month = parseInt(birthDate.month)
+    if (!birthDate.month) {
+      return '태어난 월을 입력해주세요.'
+    }
+    if (isNaN(month) || month < 1 || month > 12) {
+      return '월은 1부터 12까지 입력 가능합니다.'
+    }
+
+    // 일 검증
+    const day = parseInt(birthDate.day)
+    if (!birthDate.day) {
+      return '태어난 일을 입력해주세요.'
+    }
+    // 월별 최대 일수 계산
+    const daysInMonth = new Date(year, month, 0).getDate()
+    if (isNaN(day) || day < 1 || day > daysInMonth) {
+      return `${month}월은 1일부터 ${daysInMonth}일까지 입력 가능합니다.`
+    }
+
+    // 시간 검증 (입력된 경우)
+    if (birthDate.hour) {
+      const hour = parseInt(birthDate.hour)
+      if (isNaN(hour) || hour < 0 || hour > 23) {
+        return '시간은 0부터 23까지 입력 가능합니다.'
+      }
+    }
+
+    // 분 검증 (입력된 경우)
+    if (birthDate.minute) {
+      const minute = parseInt(birthDate.minute)
+      if (isNaN(minute) || minute < 0 || minute > 59) {
+        return '분은 0부터 59까지 입력 가능합니다.'
+      }
+    }
+
+    return null // 검증 통과
+  }
+
   const handleAnalyze = () => {
     // 입력 검증
-    if (!birthDate.year || !birthDate.month || !birthDate.day) {
-      alert('생년월일을 입력해주세요.')
+    const validationError = validateInputs()
+    if (validationError) {
+      alert(validationError)
       return
     }
 
@@ -35,7 +101,7 @@ export default function HomePage() {
       minute: birthDate.minute || '0',
       calendarType,
       gender,
-      name: name || ''
+      name: name.trim() || ''
     })
 
     router.push(`/analyze?${params.toString()}`)
