@@ -1,10 +1,20 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { Calendar, Clock, Sparkles, Star, Moon, Sun, Heart, TrendingUp } from 'lucide-react'
+import { Calendar, Clock, Sparkles, Star, Moon, Sun, Heart, TrendingUp, AlertCircle, Loader2 } from 'lucide-react'
 import Link from 'next/link'
+
+// 필드별 오류 타입
+interface FieldErrors {
+  name?: string
+  year?: string
+  month?: string
+  day?: string
+  hour?: string
+  minute?: string
+}
 
 export default function HomePage() {
   const router = useRouter()
@@ -18,79 +28,154 @@ export default function HomePage() {
   })
   const [calendarType, setCalendarType] = useState<'solar' | 'lunar'>('solar')
   const [gender, setGender] = useState<'male' | 'female'>('male')
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-  // 입력값 검증 함수
-  const validateInputs = (): string | null => {
-    // 이름 검증 (입력된 경우)
-    if (name) {
-      if (name.length < 2) {
-        return '이름은 최소 2글자 이상 입력해주세요.'
-      }
-      if (name.length > 10) {
-        return '이름은 10글자 이내로 입력해주세요.'
-      }
-      // 한글만 허용 (한글 자모, 완성형 한글)
-      const koreanRegex = /^[가-힣ㄱ-ㅎㅏ-ㅣ]+$/
-      if (!koreanRegex.test(name)) {
-        return '이름은 한글로만 입력해주세요.'
-      }
+  // 개별 필드 검증 함수
+  const validateField = useCallback((field: string, value: string): string | undefined => {
+    switch (field) {
+      case 'name':
+        if (value && value.length > 0) {
+          if (value.length < 2) return '최소 2글자 이상'
+          if (value.length > 10) return '10글자 이내로 입력'
+          if (!/^[가-힣]+$/.test(value)) return '한글만 입력 가능'
+        }
+        break
+      case 'year':
+        if (value) {
+          const year = parseInt(value)
+          if (isNaN(year)) return '숫자만 입력'
+          if (year < 1900) return '1900년 이후'
+          if (year > new Date().getFullYear()) return '미래 년도 불가'
+        }
+        break
+      case 'month':
+        if (value) {
+          const month = parseInt(value)
+          if (isNaN(month)) return '숫자만 입력'
+          if (month < 1 || month > 12) return '1~12 입력'
+        }
+        break
+      case 'day':
+        if (value) {
+          const day = parseInt(value)
+          const year = parseInt(birthDate.year) || new Date().getFullYear()
+          const month = parseInt(birthDate.month) || 1
+          const maxDays = new Date(year, month, 0).getDate()
+          if (isNaN(day)) return '숫자만 입력'
+          if (day < 1 || day > maxDays) return `1~${maxDays} 입력`
+        }
+        break
+      case 'hour':
+        if (value) {
+          const hour = parseInt(value)
+          if (isNaN(hour)) return '숫자만 입력'
+          if (hour < 0 || hour > 23) return '0~23 입력'
+        }
+        break
+      case 'minute':
+        if (value) {
+          const minute = parseInt(value)
+          if (isNaN(minute)) return '숫자만 입력'
+          if (minute < 0 || minute > 59) return '0~59 입력'
+        }
+        break
+    }
+    return undefined
+  }, [birthDate.year, birthDate.month])
+
+  // 필드 변경 핸들러 (실시간 검증)
+  const handleFieldChange = (field: string, value: string) => {
+    // 값 업데이트
+    if (field === 'name') {
+      setName(value)
+    } else {
+      setBirthDate(prev => ({ ...prev, [field]: value }))
     }
 
-    // 년도 검증
-    const year = parseInt(birthDate.year)
+    // 실시간 검증
+    const error = validateField(field, value)
+    setFieldErrors(prev => ({
+      ...prev,
+      [field]: error
+    }))
+  }
+
+  // 전체 폼 검증
+  const validateForm = (): boolean => {
+    const errors: FieldErrors = {}
+    let hasError = false
+
+    // 필수 필드 검증
     if (!birthDate.year) {
-      return '태어난 년도를 입력해주세요.'
-    }
-    if (isNaN(year) || year < 1900 || year > new Date().getFullYear()) {
-      return '년도는 1900년부터 현재까지 입력 가능합니다.'
+      errors.year = '년도 필수'
+      hasError = true
+    } else {
+      const yearError = validateField('year', birthDate.year)
+      if (yearError) {
+        errors.year = yearError
+        hasError = true
+      }
     }
 
-    // 월 검증
-    const month = parseInt(birthDate.month)
     if (!birthDate.month) {
-      return '태어난 월을 입력해주세요.'
-    }
-    if (isNaN(month) || month < 1 || month > 12) {
-      return '월은 1부터 12까지 입력 가능합니다.'
+      errors.month = '월 필수'
+      hasError = true
+    } else {
+      const monthError = validateField('month', birthDate.month)
+      if (monthError) {
+        errors.month = monthError
+        hasError = true
+      }
     }
 
-    // 일 검증
-    const day = parseInt(birthDate.day)
     if (!birthDate.day) {
-      return '태어난 일을 입력해주세요.'
-    }
-    // 월별 최대 일수 계산
-    const daysInMonth = new Date(year, month, 0).getDate()
-    if (isNaN(day) || day < 1 || day > daysInMonth) {
-      return `${month}월은 1일부터 ${daysInMonth}일까지 입력 가능합니다.`
+      errors.day = '일 필수'
+      hasError = true
+    } else {
+      const dayError = validateField('day', birthDate.day)
+      if (dayError) {
+        errors.day = dayError
+        hasError = true
+      }
     }
 
-    // 시간 검증 (입력된 경우)
+    // 선택 필드 검증
+    if (name) {
+      const nameError = validateField('name', name)
+      if (nameError) {
+        errors.name = nameError
+        hasError = true
+      }
+    }
+
     if (birthDate.hour) {
-      const hour = parseInt(birthDate.hour)
-      if (isNaN(hour) || hour < 0 || hour > 23) {
-        return '시간은 0부터 23까지 입력 가능합니다.'
+      const hourError = validateField('hour', birthDate.hour)
+      if (hourError) {
+        errors.hour = hourError
+        hasError = true
       }
     }
 
-    // 분 검증 (입력된 경우)
     if (birthDate.minute) {
-      const minute = parseInt(birthDate.minute)
-      if (isNaN(minute) || minute < 0 || minute > 59) {
-        return '분은 0부터 59까지 입력 가능합니다.'
+      const minuteError = validateField('minute', birthDate.minute)
+      if (minuteError) {
+        errors.minute = minuteError
+        hasError = true
       }
     }
 
-    return null // 검증 통과
+    setFieldErrors(errors)
+    return !hasError
   }
 
   const handleAnalyze = () => {
-    // 입력 검증
-    const validationError = validateInputs()
-    if (validationError) {
-      alert(validationError)
+    // 전체 폼 검증
+    if (!validateForm()) {
       return
     }
+
+    setIsSubmitting(true)
 
     // 분석 페이지로 이동 (쿼리 파라미터로 데이터 전달)
     const params = new URLSearchParams({
@@ -106,6 +191,10 @@ export default function HomePage() {
 
     router.push(`/analyze?${params.toString()}`)
   }
+
+  // 입력 필드에 오류가 있는지 확인
+  const hasErrors = Object.values(fieldErrors).some(error => error)
+  const isFormValid = birthDate.year && birthDate.month && birthDate.day && !hasErrors
 
   return (
     <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-indigo-950 via-purple-900 to-pink-900">
@@ -169,13 +258,25 @@ export default function HomePage() {
                 <span className="text-lg">✨</span>
                 이름 (성명학 분석용)
               </label>
-              <input
-                type="text"
-                placeholder="홍길동"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full px-4 py-4 rounded-xl bg-white/20 backdrop-blur-sm border-2 border-white/30 focus:border-pink-400 focus:outline-none text-center text-white placeholder-purple-200 transition-all hover:bg-white/30 focus:bg-white/30 text-lg"
-              />
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="홍길동"
+                  value={name}
+                  onChange={(e) => handleFieldChange('name', e.target.value)}
+                  className={`w-full px-4 py-4 rounded-xl bg-white/20 backdrop-blur-sm border-2 focus:outline-none text-center text-white placeholder-purple-200 transition-all hover:bg-white/30 focus:bg-white/30 text-lg ${
+                    fieldErrors.name
+                      ? 'border-red-400 focus:border-red-400'
+                      : 'border-white/30 focus:border-pink-400'
+                  }`}
+                />
+                {fieldErrors.name && (
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1 text-red-400">
+                    <AlertCircle size={16} />
+                    <span className="text-xs">{fieldErrors.name}</span>
+                  </div>
+                )}
+              </div>
               <p className="text-xs text-purple-200 mt-2 opacity-80">
                 * 한글 이름을 입력하시면 성명학 분석도 함께 제공됩니다
               </p>
@@ -216,36 +317,72 @@ export default function HomePage() {
             {/* 생년월일 입력 */}
             <div className="mb-8">
               <label className="block text-sm font-semibold text-purple-100 mb-3">
-                생년월일
+                생년월일 <span className="text-pink-300">*</span>
               </label>
               <div className="grid grid-cols-3 gap-4">
-                <input
-                  type="number"
-                  placeholder="년 (예: 1990)"
-                  value={birthDate.year}
-                  onChange={(e) => setBirthDate({ ...birthDate, year: e.target.value })}
-                  className="px-4 py-4 rounded-xl bg-white/20 backdrop-blur-sm border-2 border-white/30 focus:border-pink-400 focus:outline-none text-center text-white placeholder-purple-200 transition-all hover:bg-white/30 focus:bg-white/30"
-                  min="1900"
-                  max="2100"
-                />
-                <input
-                  type="number"
-                  placeholder="월 (1-12)"
-                  value={birthDate.month}
-                  onChange={(e) => setBirthDate({ ...birthDate, month: e.target.value })}
-                  className="px-4 py-4 rounded-xl bg-white/20 backdrop-blur-sm border-2 border-white/30 focus:border-pink-400 focus:outline-none text-center text-white placeholder-purple-200 transition-all hover:bg-white/30 focus:bg-white/30"
-                  min="1"
-                  max="12"
-                />
-                <input
-                  type="number"
-                  placeholder="일 (1-31)"
-                  value={birthDate.day}
-                  onChange={(e) => setBirthDate({ ...birthDate, day: e.target.value })}
-                  className="px-4 py-4 rounded-xl bg-white/20 backdrop-blur-sm border-2 border-white/30 focus:border-pink-400 focus:outline-none text-center text-white placeholder-purple-200 transition-all hover:bg-white/30 focus:bg-white/30"
-                  min="1"
-                  max="31"
-                />
+                <div className="relative">
+                  <input
+                    type="number"
+                    placeholder="년 (예: 1990)"
+                    value={birthDate.year}
+                    onChange={(e) => handleFieldChange('year', e.target.value)}
+                    className={`w-full px-4 py-4 rounded-xl bg-white/20 backdrop-blur-sm border-2 focus:outline-none text-center text-white placeholder-purple-200 transition-all hover:bg-white/30 focus:bg-white/30 ${
+                      fieldErrors.year
+                        ? 'border-red-400 focus:border-red-400'
+                        : 'border-white/30 focus:border-pink-400'
+                    }`}
+                    min="1900"
+                    max="2100"
+                  />
+                  {fieldErrors.year && (
+                    <div className="absolute -bottom-5 left-0 right-0 text-center text-red-400 text-xs flex items-center justify-center gap-1">
+                      <AlertCircle size={12} />
+                      {fieldErrors.year}
+                    </div>
+                  )}
+                </div>
+                <div className="relative">
+                  <input
+                    type="number"
+                    placeholder="월 (1-12)"
+                    value={birthDate.month}
+                    onChange={(e) => handleFieldChange('month', e.target.value)}
+                    className={`w-full px-4 py-4 rounded-xl bg-white/20 backdrop-blur-sm border-2 focus:outline-none text-center text-white placeholder-purple-200 transition-all hover:bg-white/30 focus:bg-white/30 ${
+                      fieldErrors.month
+                        ? 'border-red-400 focus:border-red-400'
+                        : 'border-white/30 focus:border-pink-400'
+                    }`}
+                    min="1"
+                    max="12"
+                  />
+                  {fieldErrors.month && (
+                    <div className="absolute -bottom-5 left-0 right-0 text-center text-red-400 text-xs flex items-center justify-center gap-1">
+                      <AlertCircle size={12} />
+                      {fieldErrors.month}
+                    </div>
+                  )}
+                </div>
+                <div className="relative">
+                  <input
+                    type="number"
+                    placeholder="일 (1-31)"
+                    value={birthDate.day}
+                    onChange={(e) => handleFieldChange('day', e.target.value)}
+                    className={`w-full px-4 py-4 rounded-xl bg-white/20 backdrop-blur-sm border-2 focus:outline-none text-center text-white placeholder-purple-200 transition-all hover:bg-white/30 focus:bg-white/30 ${
+                      fieldErrors.day
+                        ? 'border-red-400 focus:border-red-400'
+                        : 'border-white/30 focus:border-pink-400'
+                    }`}
+                    min="1"
+                    max="31"
+                  />
+                  {fieldErrors.day && (
+                    <div className="absolute -bottom-5 left-0 right-0 text-center text-red-400 text-xs flex items-center justify-center gap-1">
+                      <AlertCircle size={12} />
+                      {fieldErrors.day}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -256,24 +393,48 @@ export default function HomePage() {
                 태어난 시간 (선택사항)
               </label>
               <div className="grid grid-cols-2 gap-4">
-                <input
-                  type="number"
-                  placeholder="시 (0-23)"
-                  value={birthDate.hour}
-                  onChange={(e) => setBirthDate({ ...birthDate, hour: e.target.value })}
-                  className="px-4 py-4 rounded-xl bg-white/20 backdrop-blur-sm border-2 border-white/30 focus:border-pink-400 focus:outline-none text-center text-white placeholder-purple-200 transition-all hover:bg-white/30 focus:bg-white/30"
-                  min="0"
-                  max="23"
-                />
-                <input
-                  type="number"
-                  placeholder="분 (0-59)"
-                  value={birthDate.minute}
-                  onChange={(e) => setBirthDate({ ...birthDate, minute: e.target.value })}
-                  className="px-4 py-4 rounded-xl bg-white/20 backdrop-blur-sm border-2 border-white/30 focus:border-pink-400 focus:outline-none text-center text-white placeholder-purple-200 transition-all hover:bg-white/30 focus:bg-white/30"
-                  min="0"
-                  max="59"
-                />
+                <div className="relative">
+                  <input
+                    type="number"
+                    placeholder="시 (0-23)"
+                    value={birthDate.hour}
+                    onChange={(e) => handleFieldChange('hour', e.target.value)}
+                    className={`w-full px-4 py-4 rounded-xl bg-white/20 backdrop-blur-sm border-2 focus:outline-none text-center text-white placeholder-purple-200 transition-all hover:bg-white/30 focus:bg-white/30 ${
+                      fieldErrors.hour
+                        ? 'border-red-400 focus:border-red-400'
+                        : 'border-white/30 focus:border-pink-400'
+                    }`}
+                    min="0"
+                    max="23"
+                  />
+                  {fieldErrors.hour && (
+                    <div className="absolute -bottom-5 left-0 right-0 text-center text-red-400 text-xs flex items-center justify-center gap-1">
+                      <AlertCircle size={12} />
+                      {fieldErrors.hour}
+                    </div>
+                  )}
+                </div>
+                <div className="relative">
+                  <input
+                    type="number"
+                    placeholder="분 (0-59)"
+                    value={birthDate.minute}
+                    onChange={(e) => handleFieldChange('minute', e.target.value)}
+                    className={`w-full px-4 py-4 rounded-xl bg-white/20 backdrop-blur-sm border-2 focus:outline-none text-center text-white placeholder-purple-200 transition-all hover:bg-white/30 focus:bg-white/30 ${
+                      fieldErrors.minute
+                        ? 'border-red-400 focus:border-red-400'
+                        : 'border-white/30 focus:border-pink-400'
+                    }`}
+                    min="0"
+                    max="59"
+                  />
+                  {fieldErrors.minute && (
+                    <div className="absolute -bottom-5 left-0 right-0 text-center text-red-400 text-xs flex items-center justify-center gap-1">
+                      <AlertCircle size={12} />
+                      {fieldErrors.minute}
+                    </div>
+                  )}
+                </div>
               </div>
               <p className="text-xs text-purple-200 mt-2 opacity-80">
                 * 정확한 시간을 모르시면 비워두셔도 됩니다 (정오 12시로 계산됩니다)
@@ -312,13 +473,34 @@ export default function HomePage() {
             {/* 분석 시작 버튼 */}
             <Button
               onClick={handleAnalyze}
-              className="w-full bg-gradient-to-r from-yellow-400 via-pink-500 to-purple-600 hover:from-yellow-500 hover:via-pink-600 hover:to-purple-700 text-white py-7 px-8 rounded-2xl text-xl font-bold shadow-2xl hover:shadow-pink-500/50 transition-all duration-300 transform hover:scale-105 border-2 border-white/30"
+              disabled={isSubmitting || hasErrors}
+              className={`w-full py-7 px-8 rounded-2xl text-xl font-bold shadow-2xl transition-all duration-300 transform border-2 border-white/30 ${
+                isSubmitting || hasErrors
+                  ? 'bg-gray-500 cursor-not-allowed opacity-60'
+                  : 'bg-gradient-to-r from-yellow-400 via-pink-500 to-purple-600 hover:from-yellow-300 hover:via-pink-400 hover:to-purple-500 hover:shadow-pink-500/50 hover:scale-[1.02] hover:-translate-y-1 active:scale-[0.98] active:translate-y-0 active:shadow-inner'
+              }`}
               size="lg"
             >
-              <Sparkles className="mr-3 animate-pulse" size={28} />
-              사주 분석 시작하기
-              <Sparkles className="ml-3 animate-pulse" size={28} />
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-3 animate-spin" size={28} />
+                  분석 중...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="mr-3 animate-pulse" size={28} />
+                  사주 분석 시작하기
+                  <Sparkles className="ml-3 animate-pulse" size={28} />
+                </>
+              )}
             </Button>
+
+            {hasErrors && (
+              <p className="text-center text-sm text-red-400 mt-4 flex items-center justify-center gap-2">
+                <AlertCircle size={16} />
+                입력값을 확인해주세요
+              </p>
+            )}
 
             <p className="text-center text-sm text-purple-200 mt-6 opacity-80">
               ⭐ 무료 기본 분석 제공 · 프리미엄 상세 해석 이용 가능 ⭐

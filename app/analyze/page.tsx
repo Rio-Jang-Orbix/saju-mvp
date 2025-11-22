@@ -27,73 +27,141 @@ function AnalyzePageContent() {
 
   useEffect(() => {
     // URL 파라미터에서 데이터 가져오기
-    const year = parseInt(searchParams.get('year') || '0')
-    const month = parseInt(searchParams.get('month') || '0')
-    const day = parseInt(searchParams.get('day') || '0')
-    const hour = parseInt(searchParams.get('hour') || '12')
-    const minute = parseInt(searchParams.get('minute') || '0')
+    const yearStr = searchParams.get('year')
+    const monthStr = searchParams.get('month')
+    const dayStr = searchParams.get('day')
+    const hourStr = searchParams.get('hour') || '12'
+    const minuteStr = searchParams.get('minute') || '0'
     const calendarType = searchParams.get('calendarType') || 'solar'
     const gender = (searchParams.get('gender') || 'male') as 'male' | 'female'
     const name = searchParams.get('name') || ''
 
-    if (year && month && day) {
-      // 클로저 문제 해결을 위한 플래그
-      let calculationCompleted = false
+    // 필수 파라미터 검증
+    if (!yearStr || !monthStr || !dayStr) {
+      setError('생년월일 정보가 없습니다. 처음부터 다시 시작해주세요.')
+      setIsCalculating(false)
+      return
+    }
 
-      // 약간의 딜레이로 로딩 효과
-      const timeoutId = setTimeout(() => {
+    const year = parseInt(yearStr)
+    const month = parseInt(monthStr)
+    const day = parseInt(dayStr)
+    const hour = parseInt(hourStr)
+    const minute = parseInt(minuteStr)
+
+    // 입력값 유효성 검증
+    const currentYear = new Date().getFullYear()
+
+    if (isNaN(year) || year < 1900 || year > currentYear) {
+      setError(`년도가 올바르지 않습니다. (${yearStr}) 1900년~${currentYear}년 사이의 값을 입력해주세요.`)
+      setIsCalculating(false)
+      return
+    }
+
+    if (isNaN(month) || month < 1 || month > 12) {
+      setError(`월이 올바르지 않습니다. (${monthStr}) 1~12 사이의 값을 입력해주세요.`)
+      setIsCalculating(false)
+      return
+    }
+
+    const maxDays = new Date(year, month, 0).getDate()
+    if (isNaN(day) || day < 1 || day > maxDays) {
+      setError(`일이 올바르지 않습니다. (${dayStr}) ${month}월은 1~${maxDays}일까지 입력 가능합니다.`)
+      setIsCalculating(false)
+      return
+    }
+
+    if (isNaN(hour) || hour < 0 || hour > 23) {
+      setError(`시간이 올바르지 않습니다. (${hourStr}) 0~23 사이의 값을 입력해주세요.`)
+      setIsCalculating(false)
+      return
+    }
+
+    if (isNaN(minute) || minute < 0 || minute > 59) {
+      setError(`분이 올바르지 않습니다. (${minuteStr}) 0~59 사이의 값을 입력해주세요.`)
+      setIsCalculating(false)
+      return
+    }
+
+    // 클로저 문제 해결을 위한 플래그
+    let calculationCompleted = false
+
+    // 약간의 딜레이로 로딩 효과
+    const timeoutId = setTimeout(() => {
+      try {
+        const result = calculateSaju(
+          year,
+          month,
+          day,
+          hour,
+          minute,
+          calendarType === 'lunar',
+          gender
+        )
+
+        // 결과 검증
+        if (!result || !result.day || !result.day.stem) {
+          throw new Error('사주 계산 결과가 올바르지 않습니다.')
+        }
+
+        setSajuResult(result)
+
+        // 대운 계산
         try {
-          const result = calculateSaju(
-            year,
-            month,
-            day,
-            hour,
-            minute,
-            calendarType === 'lunar',
-            gender
-          )
-          setSajuResult(result)
-
-          // 대운 계산
           const currentAge = calculateKoreanAge(year)
           const daeun = calculateDaeun(result, currentAge)
           setDaeunResult(daeun)
+        } catch (daeunErr) {
+          console.warn('대운 계산 오류 (무시됨):', daeunErr)
+        }
 
-          // 고급 이론 분석
+        // 고급 이론 분석
+        try {
           const advanced = analyzeAdvancedSaju(result)
           setAdvancedAnalysis(advanced)
+        } catch (advErr) {
+          console.warn('고급 분석 오류 (무시됨):', advErr)
+        }
 
-          // 성명학 분석 (이름이 있는 경우)
-          if (name && name.length >= 2) {
+        // 성명학 분석 (이름이 있는 경우)
+        if (name && name.length >= 2) {
+          try {
             setUserName(name)
             const seongmyeong = analyzeSeongmyeong(name, result)
             setSeongmyeongResult(seongmyeong)
+          } catch (nameErr) {
+            console.warn('성명학 분석 오류 (무시됨):', nameErr)
           }
-
-          calculationCompleted = true
-          setIsCalculating(false)
-        } catch (err) {
-          console.error('사주 계산 오류:', err)
-          setError('사주 계산 중 오류가 발생했습니다. 입력값을 확인해주세요.')
-          calculationCompleted = true
-          setIsCalculating(false)
         }
-      }, 1500)
 
-      // 타임아웃 설정 (15초) - 클로저 플래그로 체크
-      const maxTimeoutId = setTimeout(() => {
-        if (!calculationCompleted) {
-          setError('사주 계산이 너무 오래 걸리고 있습니다. 다시 시도해주세요.')
-          setIsCalculating(false)
+        calculationCompleted = true
+        setIsCalculating(false)
+      } catch (err) {
+        console.error('사주 계산 오류:', err)
+        const errorMessage = err instanceof Error ? err.message : '알 수 없는 오류'
+
+        // 구체적인 오류 메시지 생성
+        if (calendarType === 'lunar') {
+          setError(`음력 ${year}년 ${month}월 ${day}일의 사주 계산 중 오류가 발생했습니다.\n\n• 입력한 음력 날짜가 실제로 존재하는지 확인해주세요.\n• 음력 날짜가 맞는지 다시 확인해주세요.\n\n상세 오류: ${errorMessage}`)
+        } else {
+          setError(`${year}년 ${month}월 ${day}일의 사주 계산 중 오류가 발생했습니다.\n\n• 입력한 날짜가 올바른지 확인해주세요.\n\n상세 오류: ${errorMessage}`)
         }
-      }, 15000)
-
-      return () => {
-        clearTimeout(timeoutId)
-        clearTimeout(maxTimeoutId)
+        calculationCompleted = true
+        setIsCalculating(false)
       }
-    } else {
-      router.push('/')
+    }, 1000)
+
+    // 타임아웃 설정 (10초) - 클로저 플래그로 체크
+    const maxTimeoutId = setTimeout(() => {
+      if (!calculationCompleted) {
+        setError('사주 계산이 10초 이상 소요되고 있습니다.\n\n페이지를 새로고침하거나 다시 시도해주세요.')
+        setIsCalculating(false)
+      }
+    }, 10000)
+
+    return () => {
+      clearTimeout(timeoutId)
+      clearTimeout(maxTimeoutId)
     }
   }, [searchParams, router])
 
@@ -155,32 +223,35 @@ function AnalyzePageContent() {
   if (error) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-indigo-950 via-purple-900 to-pink-900 flex items-center justify-center px-4">
-        <div className="max-w-md w-full">
-          <div className="backdrop-blur-xl bg-white/10 rounded-3xl p-8 border border-white/20 text-center">
+        <div className="max-w-lg w-full">
+          <div className="backdrop-blur-xl bg-white/10 rounded-3xl p-8 border border-red-500/30 text-center">
             <div className="text-6xl mb-6">⚠️</div>
-            <h2 className="text-2xl font-bold text-white mb-4">오류가 발생했습니다</h2>
-            <p className="text-purple-200 mb-6">{error}</p>
+            <h2 className="text-2xl font-bold text-red-300 mb-4">오류가 발생했습니다</h2>
+            <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 mb-6">
+              <p className="text-red-200 text-left whitespace-pre-line text-sm">{error}</p>
+            </div>
             <div className="space-y-3">
               <Button
                 onClick={() => router.push('/')}
-                className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-medium py-3 rounded-xl"
+                className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-400 hover:to-pink-400 hover:scale-[1.02] active:scale-[0.98] text-white font-medium py-4 rounded-xl transition-all duration-200"
               >
                 <ArrowLeft size={18} className="mr-2" />
                 처음으로 돌아가기
               </Button>
               <Button
                 onClick={() => window.location.reload()}
-                className="w-full bg-white/20 hover:bg-white/30 border border-white/30 text-white font-medium py-3 rounded-xl"
+                className="w-full bg-white/20 hover:bg-white/30 hover:scale-[1.02] active:scale-[0.98] border border-white/30 text-white font-medium py-4 rounded-xl transition-all duration-200"
               >
                 다시 시도하기
               </Button>
             </div>
-            <div className="mt-6 text-sm text-purple-300">
-              <p>문제가 계속되면 다음을 확인해주세요:</p>
-              <ul className="mt-2 text-left space-y-1 text-xs">
-                <li>• 생년월일이 올바른지 확인</li>
-                <li>• 음력/양력 선택이 정확한지 확인</li>
-                <li>• 브라우저를 새로고침 후 재시도</li>
+            <div className="mt-6 text-sm text-purple-300 bg-purple-500/10 rounded-xl p-4">
+              <p className="font-semibold mb-2">문제가 계속되면:</p>
+              <ul className="text-left space-y-1 text-xs">
+                <li>• 생년월일이 올바른지 확인해주세요</li>
+                <li>• 음력/양력 선택이 정확한지 확인해주세요</li>
+                <li>• 음력의 경우 실제 존재하는 날짜인지 확인해주세요</li>
+                <li>• 브라우저를 새로고침 후 재시도해주세요</li>
               </ul>
             </div>
           </div>
@@ -229,7 +300,7 @@ function AnalyzePageContent() {
           <div className="flex justify-between items-center mb-6">
             <button
               onClick={() => router.push('/')}
-              className="text-purple-200 hover:text-white flex items-center gap-2 transition-colors"
+              className="text-purple-200 hover:text-white hover:scale-105 active:scale-95 flex items-center gap-2 transition-all duration-200 px-3 py-2 rounded-lg hover:bg-white/10"
             >
               <ArrowLeft size={20} />
               돌아가기
@@ -237,7 +308,7 @@ function AnalyzePageContent() {
             <div className="flex gap-2">
               <Button
                 onClick={handleCopy}
-                className="bg-white/20 hover:bg-white/30 border border-white/30 text-white px-4 py-2"
+                className="bg-white/20 hover:bg-white/40 hover:scale-105 active:scale-95 border border-white/30 text-white px-4 py-2 transition-all duration-200"
                 size="sm"
               >
                 <Copy size={16} className="mr-1" />
@@ -245,7 +316,7 @@ function AnalyzePageContent() {
               </Button>
               <Button
                 onClick={handleShare}
-                className="bg-white/20 hover:bg-white/30 border border-white/30 text-white px-4 py-2"
+                className="bg-white/20 hover:bg-white/40 hover:scale-105 active:scale-95 border border-white/30 text-white px-4 py-2 transition-all duration-200"
                 size="sm"
               >
                 <Share2 size={16} className="mr-1" />
@@ -701,7 +772,7 @@ function AnalyzePageContent() {
               </p>
               <Button
                 onClick={handleAIInterpretation}
-                className="bg-gradient-to-r from-yellow-400 via-pink-500 to-purple-600 hover:from-yellow-500 hover:via-pink-600 hover:to-purple-700 text-white py-4 px-8 rounded-xl text-lg font-semibold"
+                className="bg-gradient-to-r from-yellow-400 via-pink-500 to-purple-600 hover:from-yellow-300 hover:via-pink-400 hover:to-purple-500 hover:scale-105 hover:-translate-y-1 active:scale-95 active:translate-y-0 text-white py-4 px-8 rounded-xl text-lg font-semibold shadow-lg hover:shadow-pink-500/50 transition-all duration-300"
               >
                 <Sparkles className="mr-2" size={20} />
                 AI 해석 받기
@@ -735,7 +806,7 @@ function AnalyzePageContent() {
         <div className="text-center">
           <Button
             onClick={() => router.push('/')}
-            className="bg-white/20 hover:bg-white/30 text-white border-2 border-white/30 py-4 px-8 rounded-xl"
+            className="bg-white/20 hover:bg-white/40 hover:scale-105 active:scale-95 text-white border-2 border-white/30 py-4 px-8 rounded-xl transition-all duration-200"
           >
             새로운 사주 분석하기
           </Button>
