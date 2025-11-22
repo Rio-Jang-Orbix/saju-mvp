@@ -8,7 +8,8 @@ import { sajuToText, copyToClipboard, shareViaNative } from '@/lib/saju/share'
 import { calculateDaeun, calculateKoreanAge } from '@/lib/saju/daeun'
 import type { DaeunResult } from '@/lib/saju/daeun'
 import { analyzeAdvancedSaju, type AdvancedSajuAnalysis, getSibiUnseongStrength, getTongByeonDescription, getTongByeonFortune } from '@/lib/saju/advanced'
-import { Sparkles, ArrowLeft, Loader2, Star, Share2, Copy, TrendingUp, BookOpen, Zap, Users } from 'lucide-react'
+import { analyzeSeongmyeong, type SeongmyeongResult, getOggyeokDescription, getElementDescription } from '@/lib/saju/seongmyeong'
+import { Sparkles, ArrowLeft, Loader2, Star, Share2, Copy, TrendingUp, BookOpen, Zap, Users, User } from 'lucide-react'
 
 function AnalyzePageContent() {
   const router = useRouter()
@@ -16,6 +17,8 @@ function AnalyzePageContent() {
   const [sajuResult, setSajuResult] = useState<SajuResult | null>(null)
   const [daeunResult, setDaeunResult] = useState<DaeunResult | null>(null)
   const [advancedAnalysis, setAdvancedAnalysis] = useState<AdvancedSajuAnalysis | null>(null)
+  const [seongmyeongResult, setSeongmyeongResult] = useState<SeongmyeongResult | null>(null)
+  const [userName, setUserName] = useState<string>('')
   const [isCalculating, setIsCalculating] = useState(true)
   const [aiInterpretation, setAiInterpretation] = useState<string>('')
   const [isLoadingAI, setIsLoadingAI] = useState(false)
@@ -31,6 +34,7 @@ function AnalyzePageContent() {
     const minute = parseInt(searchParams.get('minute') || '0')
     const calendarType = searchParams.get('calendarType') || 'solar'
     const gender = (searchParams.get('gender') || 'male') as 'male' | 'female'
+    const name = searchParams.get('name') || ''
 
     if (year && month && day) {
       // 클로저 문제 해결을 위한 플래그
@@ -58,6 +62,13 @@ function AnalyzePageContent() {
           // 고급 이론 분석
           const advanced = analyzeAdvancedSaju(result)
           setAdvancedAnalysis(advanced)
+
+          // 성명학 분석 (이름이 있는 경우)
+          if (name && name.length >= 2) {
+            setUserName(name)
+            const seongmyeong = analyzeSeongmyeong(name, result)
+            setSeongmyeongResult(seongmyeong)
+          }
 
           calculationCompleted = true
           setIsCalculating(false)
@@ -321,6 +332,85 @@ function AnalyzePageContent() {
             </div>
           </div>
         </div>
+
+        {/* 성명학 분석 */}
+        {seongmyeongResult && (
+          <div className="mb-12">
+            <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
+              <User className="text-pink-300" />
+              성명학 분석 (姓名學)
+            </h2>
+            <div className="backdrop-blur-xl bg-white/10 rounded-2xl p-8 border border-white/20">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <p className="text-purple-200 mb-2">이름의 획수와 오행을 분석하여 운명을 풀이합니다.</p>
+                  <div className="text-3xl font-bold text-white">
+                    {seongmyeongResult.name}
+                    <span className="text-lg text-purple-300 ml-3">
+                      (총 {seongmyeongResult.strokes.total}획)
+                    </span>
+                  </div>
+                </div>
+                <div className="text-center p-4 rounded-xl" style={{ backgroundColor: getElementColor(seongmyeongResult.element) + '30' }}>
+                  <div className="text-3xl font-bold text-white">{seongmyeongResult.element}</div>
+                  <div className="text-sm text-purple-200">주요 오행</div>
+                </div>
+              </div>
+
+              {/* 사주-이름 궁합 */}
+              {seongmyeongResult.compatibility && (
+                <div className="mb-6 p-4 bg-gradient-to-r from-pink-500/20 to-purple-500/20 rounded-xl border border-pink-300/30">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-lg font-bold text-pink-200 mb-1">사주-이름 궁합</h3>
+                      <p className="text-purple-200 text-sm">{seongmyeongResult.compatibility.description}</p>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-4xl font-bold text-white">{seongmyeongResult.compatibility.score}점</div>
+                      <div className="text-xs text-pink-200">/ 100점</div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* 오격 분석 */}
+              <h3 className="text-lg font-bold text-white mb-4">오격 분석 (五格)</h3>
+              <div className="grid grid-cols-1 md:grid-cols-5 gap-3 mb-6">
+                {[
+                  { name: '천격', data: seongmyeongResult.oggyeok.cheongyeok, emoji: '🌌' },
+                  { name: '인격', data: seongmyeongResult.oggyeok.ingyeok, emoji: '👤' },
+                  { name: '지격', data: seongmyeongResult.oggyeok.jigyeok, emoji: '🌍' },
+                  { name: '외격', data: seongmyeongResult.oggyeok.oegyeok, emoji: '🌐' },
+                  { name: '총격', data: seongmyeongResult.oggyeok.chonggyeok, emoji: '⭐' },
+                ].map(({ name, data, emoji }) => (
+                  <div key={name} className="p-4 bg-white/5 rounded-xl text-center">
+                    <div className="text-2xl mb-1">{emoji}</div>
+                    <div className="text-sm text-purple-200 mb-1">{name}</div>
+                    <div className="text-2xl font-bold text-white mb-1">{data.strokes}획</div>
+                    <div className="text-sm mb-1" style={{ color: getElementColor(data.element) }}>
+                      {data.element} ({data.yinYang})
+                    </div>
+                    <div className={`text-xs px-2 py-1 rounded-full inline-block ${
+                      data.fortune === '대길' ? 'bg-green-500/30 text-green-200' :
+                      data.fortune === '길' ? 'bg-blue-500/30 text-blue-200' :
+                      data.fortune === '반길' ? 'bg-yellow-500/30 text-yellow-200' :
+                      data.fortune === '흉' ? 'bg-orange-500/30 text-orange-200' :
+                      'bg-red-500/30 text-red-200'
+                    }`}>
+                      {data.fortune}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* 해석 */}
+              <div className="p-4 bg-purple-500/10 rounded-xl">
+                <h4 className="text-sm font-bold text-purple-200 mb-2">종합 해석</h4>
+                <p className="text-white">{seongmyeongResult.interpretation}</p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* 십이운성 분석 */}
         {advancedAnalysis && (

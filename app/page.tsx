@@ -8,6 +8,7 @@ import Link from 'next/link'
 
 export default function HomePage() {
   const router = useRouter()
+  const [name, setName] = useState('')
   const [birthDate, setBirthDate] = useState({
     year: '',
     month: '',
@@ -33,7 +34,8 @@ export default function HomePage() {
       hour: birthDate.hour || '12',
       minute: birthDate.minute || '0',
       calendarType,
-      gender
+      gender,
+      name: name || ''
     })
 
     router.push(`/analyze?${params.toString()}`)
@@ -95,6 +97,24 @@ export default function HomePage() {
 
           {/* Input Form with Glass Effect */}
           <div className="backdrop-blur-xl bg-white/10 rounded-3xl shadow-2xl border border-white/20 p-8 md:p-12 animate-slide-up animation-delay-600">
+            {/* 이름 입력 */}
+            <div className="mb-8">
+              <label className="block text-sm font-semibold text-purple-100 mb-3 flex items-center gap-2">
+                <span className="text-lg">✨</span>
+                이름 (성명학 분석용)
+              </label>
+              <input
+                type="text"
+                placeholder="홍길동"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full px-4 py-4 rounded-xl bg-white/20 backdrop-blur-sm border-2 border-white/30 focus:border-pink-400 focus:outline-none text-center text-white placeholder-purple-200 transition-all hover:bg-white/30 focus:bg-white/30 text-lg"
+              />
+              <p className="text-xs text-purple-200 mt-2 opacity-80">
+                * 한글 이름을 입력하시면 성명학 분석도 함께 제공됩니다
+              </p>
+            </div>
+
             {/* 양력/음력 선택 */}
             <div className="mb-8">
               <label className="block text-sm font-semibold text-purple-100 mb-3 flex items-center gap-2">
