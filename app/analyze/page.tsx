@@ -33,6 +33,9 @@ function AnalyzePageContent() {
     const gender = (searchParams.get('gender') || 'male') as 'male' | 'female'
 
     if (year && month && day) {
+      // 클로저 문제 해결을 위한 플래그
+      let calculationCompleted = false
+
       // 약간의 딜레이로 로딩 효과
       const timeoutId = setTimeout(() => {
         try {
@@ -56,21 +59,23 @@ function AnalyzePageContent() {
           const advanced = analyzeAdvancedSaju(result)
           setAdvancedAnalysis(advanced)
 
+          calculationCompleted = true
           setIsCalculating(false)
         } catch (err) {
           console.error('사주 계산 오류:', err)
           setError('사주 계산 중 오류가 발생했습니다. 입력값을 확인해주세요.')
+          calculationCompleted = true
           setIsCalculating(false)
         }
       }, 1500)
 
-      // 타임아웃 설정 (10초)
+      // 타임아웃 설정 (15초) - 클로저 플래그로 체크
       const maxTimeoutId = setTimeout(() => {
-        if (isCalculating) {
+        if (!calculationCompleted) {
           setError('사주 계산이 너무 오래 걸리고 있습니다. 다시 시도해주세요.')
           setIsCalculating(false)
         }
-      }, 10000)
+      }, 15000)
 
       return () => {
         clearTimeout(timeoutId)
